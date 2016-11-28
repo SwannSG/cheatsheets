@@ -48,6 +48,7 @@ Non-primitives ([], {}, function)
 - always passed by reference
 
 
+
 ```javascript
 var x = 3, y = 4;
 	// scope is between { } of function and it's as if variable is declared immediately after the opening {, sometimes called hoisting
