@@ -51,8 +51,11 @@ Non-primitives ([], {}, function)
 
 ```javascript
 var x = 3, y = 4;
-	// scope is between { } of function and it's as if variable is declared immediately after the opening {, sometimes called hoisting
-	// if var is declared in the global scope, think of the globale scope being enclosed with an opening { and closing }
+	// scope is between { } of function and it's as if variable is declared
+	// immediately after the opening {, sometimes called hoisting
+
+	// if var is declared in the global scope, think of the global scope
+	// enclosed with an opening { and closing }
 
 let x = 3, y = 4;
 	// block scope between {}, also checks if identifier has already been used
