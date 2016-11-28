@@ -47,15 +47,16 @@ Primitives (number, string, boolean)
 Non-primitives ([], {}, function)
 - always passed by reference
 
+
 ```javascript
-	var x = 3, y = 4;
+var x = 3, y = 4;
 	// scope is between { } of function and it's as if variable is declared immediately after the opening {, sometimes called hoisting
 	// if var is declared in the global scope, think of the globale scope being enclosed with an opening { and closing }
 
-	let x = 3, y = 4;
+let x = 3, y = 4;
 	// block scope between {}, also checks if identifier has already been used
 
-	const x = 3, y = 4;
+const x = 3, y = 4;
 	// same as let scope but checks identifier and type
 ```
 
