@@ -406,21 +406,22 @@ Error handling may alter program flow.
 	function isJsonOk = function(jsonStr) {
 		try {
 			JSON.parse(jsonStr);
+			return true;
 		}
 		catch (error) {
 			// note: don't throw an error
 			return false;
 		}
-			return true;
-		};
-
+};
 ```
+
 
 In a browser, *windows.onerror* event usage:
 - the *windows.onerror* event is fired when an error occurs
 - very good way to centrally log all errors
 - can also send the errors to a central server
 
+```javascript
 	window.onerror = function(msg, url, lineNo, columnNo, error) {
 	 	// error is an object with properties name, message, stack
 	 	console.log('window.onerror function');
@@ -433,7 +434,7 @@ In a browser, *windows.onerror* event usage:
 		console.log('error.stack: ' + error.stack);	// shows full stact trace
 		// send errors to central server here
 	}
-
+```
 
 Throwing an error:
 - always create an error object
@@ -441,7 +442,7 @@ Throwing an error:
 - will cause *window.onerror* event
 - the Error object will include msg, lineNo, columnNo, and error.stack properties
 
-
+```javascript
 	// how to throw an error, should generally be avoided
 	if (someError) {
 		throw new Error('some error message');
@@ -451,6 +452,7 @@ Throwing an error:
 	window.onerror = function(msg, url, lineNo, columnNo, error) {
 		// 'error' is an object
 	}
+```
 
 ## Understanding the event queue and single threaded call stack
 
@@ -498,7 +500,7 @@ In the below example runFn spawns the timer *setTimeout* with callback function 
 The closure is because the curly braces { and } enclose the callback function 'timeout'. In this particular instance once runFn has completed the variable a,b,c can only be access by the *timeout* function. As such their values cannot be altered.
 
 The global object always has a closure over any callback function. But these values can be altered before the timer event occurs. The *timeout* function reads the values at the a, b, c reference.  
-
+```javascript
 	function runFn() {						// closure runFn  
   		console.log('runFn');
   		let a = 10;
@@ -534,6 +536,7 @@ The global object always has a closure over any callback function. But these val
 	  console.log(event);
 	  runFn();
 	});
+```
 
 #### Understanding *this* inside a callback
 
