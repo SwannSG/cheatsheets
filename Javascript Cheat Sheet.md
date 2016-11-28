@@ -415,7 +415,6 @@ Error handling may alter program flow.
 };
 ```
 
-
 In a browser, *windows.onerror* event usage:
 - the *windows.onerror* event is fired when an error occurs
 - very good way to centrally log all errors
@@ -448,7 +447,7 @@ Throwing an error:
 		throw new Error('some error message');
 	}
 
-	// a throw can be caught with window.onerror
+	// a throw can be caught with window.onerror event handler
 	window.onerror = function(msg, url, lineNo, columnNo, error) {
 		// 'error' is an object
 	}
@@ -460,7 +459,7 @@ The JavaScript engine is single threaded. This means only one line of code can b
 
 When a function, *fn1*, is called it is placed on the call stack. If a *fn2* is called from inside *f1*, this is also placed on the call stack. And suppose *fn3* is called inside *fn2*, then this too is placed on the call stack.
 
-	call stack		call stack after		call stack after		call stack after
+	call stack		call stack after	call stack after		call stack after
 					fn3 returns			fn2 returns			fn1 returns			
 		fn3			
 		-----
@@ -537,12 +536,6 @@ The global object always has a closure over any callback function. But these val
 	  runFn();
 	});
 ```
-
-#### Understanding *this* inside a callback
-
-
-
-
 
 ## Explicit Loops
 
@@ -759,7 +752,7 @@ call, apply
 - func.call(thisArg, arg1, arg2)
 - func.apply(thisArg, [arg1, arg2])
 
-
+```javascript
 	function func() {console.log('a running'); console.log(arguments)}
 	func.call(window, 1, 2)	// arguments = [1, 2]
 	func.apply(window, [1, 2])	// arguments = [1, 2]
@@ -767,7 +760,7 @@ call, apply
 	setTimeout(a.bind(window, 1,2,3),1000)
 	// a running
 	// [1,2,3]
-
+```
 
 ## Useful Items
 
@@ -777,6 +770,7 @@ Spread operator
 - **x** can be function arguments (1, 2, 3) or an array
 - make copy of an array
 
+```javascript
 	// expand function arguments
 	functiofn1 = (x=1, y=2) => ({x:x});n fn(...args) {args; // [10, 20, 30]}
 	fn(10,12,30)
@@ -788,3 +782,4 @@ Spread operator
 	// copy an array
 	arr1 = [1, 2, 3]
 	arr2 = [...arr1]				// copy of arr1
+```
