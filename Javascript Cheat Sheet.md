@@ -39,7 +39,7 @@ Falsy
 ## References
 
 Identifier = value
-value sets type of variable
+- value sets type of variable
 
 Primitives (number, string, boolean)
 - always passed by value and not by refererence
@@ -47,12 +47,15 @@ Primitives (number, string, boolean)
 Non-primitives ([], {}, function)
 - always passed by reference
 
-	var x = 3, y = 4;	// scope is between { } of function and it's as if variable is declared immediately after the opening {, sometimes called hoisting
-	
-	let x = 3, y = 4;	// block scope between {}, also checks if identifier has already been used
-	
-	const x = 3, y = 4; // same as let scope but checks identifier and type
-	
+var x = 3, y = 4;
+- scope is between { } of function and it's as if variable is declared immediately after the opening {, sometimes called hoisting
+
+let x = 3, y = 4;
+- block scope between {}, also checks if identifier has already been used
+
+const x = 3, y = 4;
+- same as let scope but checks identifier and type
+
 **var** is replaced by **let** and **const**.
 
 Use **const** before **let** because it prevents overwriting a variable and also does type checking.  
@@ -61,14 +64,14 @@ Use **const** before **let** because it prevents overwriting a variable and also
 
 Objects are a collection of key and value pairs. Every object has a special pointer to another object. We call this pointer a **prototype**.  
 
-A key is a string. If key is a "valid" string we can use the dot operator. ES6 now allows for a numeric key. 
+A key is a string. If key is a "valid" string we can use the dot operator. ES6 now allows for a numeric key.
 
 	const obj = Object.create(null)	// creates an empty object
-	obj.key		// undefined, and whatever we make key is a valid string
-	obj['key']	// also undefined,  and whatever we make key is not a valid string
+	obj.key		// undefined, use this syntax for a valid key string
+	obj['key']	// also undefined,  use this syntax for an invalid key string
 
 In javascript a key is generally refered to as a **property**.  To get an array of the enumerable keys or properties of an object use *Object.keys(obj)*.
-	
+
 Every **propery** (key) has some meta information.
 - enumerable, if true shows up when we loop over an object's properties
 - configurable, if true may delete it
@@ -76,7 +79,7 @@ Every **propery** (key) has some meta information.
 - value, set the value associated with the property  
 
 To read **property** meta information use *Object.getOwnPropertyDescriptor(obj, 'property')*.
-	
+
 	const obj = Object.create(null)	// create empty object
 	Object.defineProperty(	obj,	// object onto which property is attached
 							 'a',		// property name
@@ -95,42 +98,44 @@ When we look for a property on an object:
 - then look on the object pointed to by the prototype pointer, and so on
 - follow the prototype chain untill a *null*  value is returned
 
+'''javascript
 	let parent = Object.create(null)							// create object
 	Object.defineProperty(parent, 'a', {value: 1,				// create property on object
 									    writable:true,
 									    enumerable:true,
 									    configurable: true})
-	
+
 	let child = Object.create(parent)
 	Object.getPrototypeOf(child)			// returns parent object
-	
+	'''
+
 **Shared methods**
 
 Method sharing can be done with each object in the prototype chain. Remember a property can have a function as a value. 	
-	
-	// 'person' contains the method to be shared 
+
+	// 'person' contains the method to be shared
 	let person = Object.create(null)
-	Object.defineProperty(person,  'fullname', 
+	Object.defineProperty(person,  'fullname',
 							{value: function() => {firstname + ' ' + surname},
 							writable:true,
 							enumerable:true,
 							configurable: true})
-	
+
 	let john = Object.create(person)
-	john.firstname = 'John'	// local property	
+	john.firstname = 'John'	// local property
 	john.surname = 'Smith'	// local property
 	john.fullname()			// John Smith, function is found on prototype object 'person'
-	
+
 
 **Shorthand With Object Literals**
 
 	let obj = {a:1, b:2, c:3}	// object literal shorthand
-	
+
 	/* Approximately equivalent to
 	*	let obj = Object.create(Object.prototype);
 	*	obj.a = 1
 	*	obj.b = 2
-	*	obj.c = 3 */ 
+	*	obj.c = 3 */
 
 An object literal always sets the newly created object (*obj* in this case) to the object located at *Object.prototype*. This object has a number of standard methods.
 - constructor
@@ -142,16 +147,16 @@ An object literal always sets the newly created object (*obj* in this case) to t
 - *valueOf*(), primitive value
 
 	let obj = Object.prototype
-	obj.constructor	// reference to a function 
+	obj.constructor	// reference to a function
 	obj.hasOwnProperty('hasOwnProperty')	// true
 	obj.isPrototypeOf(Object)	// true
 	obj.propertyIsEnumerable('toString')	//false
 	obj.toString()	// "[object Object]"
 	obj.valueOf()	// Object
-	
+
 Object literal syntax has evolved significantly with new ES6 features.
 - *\_\_proto\_\_* sets prototype object
-- shorthand method declaration with just *methodName* 
+- shorthand method declaration with just *methodName*
 - another shorthand method with just *methodName() { }*
 - computed, dynamic property names *[ 'prop_' + (() => 42)() ]: 42*
 
@@ -163,26 +168,26 @@ Object literal syntax has evolved significantly with new ES6 features.
 		doFn() {console.log('doFn'); console.log(this);}	// property name is 'doFn'
 		// equivalent to doFn: function doFn() {console.log('doFn'); console.log(this);}
 		[ Math.PI]: 42
-	    }	
-	
+	    }
+
 	someFunc(a,b) {console.log(a+b)}
-	
+
 	obj2.b	// 'function b'
 	obj2.someFunc(2,3)	// 5
 	obj2.doFn()	// 'doFn', this refers to obj2
 	obj2.3.141592653589793	// syntax error
-	obj2[3.141592653589793]	// 42	
-	
-	
-		
+	obj2[3.141592653589793]	// 42
+
+
+
 **Masking references in local object where same reference is on the prototype chain**
 
 	let o1 = {a:1, b:2}
 	let o2 = Object.create(o1)
 	o2.a = 20	// does not overwrite o1.a but masks it
 	o1.a	// still 1
-		
-## Interrogate An Object 
+
+## Interrogate An Object
 
 Often we want to know stuff about an object. Local properties versus properties on the prototype chain. For an object we may want to know:
 - local properties and values
@@ -197,40 +202,40 @@ To get properties of an object:
 
 	// create obj1 as an object literal
 	let obj1 = {a:1, b:function() {console.log("function b")}}
-	
-	// create obj2 with prototype pointing to obj1 
+
+	// create obj2 with prototype pointing to obj1
 	let obj2 = Object.create(obj1)
 	obj2.c = "This is "c" property value"
-	// add another property that is not enumerable	
+	// add another property that is not enumerable
 	Object.defineProperty(obj2, 'd', {writable:true, configurable:true, enumerable:false, value:3})
-	
+
 	// get all (enumerable and non-enumerable) local properties
 	Object.getOwnPropertyNames(obj2)	// array of all local properties ["c", "d"]
-	
-	// for only enumerable local properties 
+
+	// for only enumerable local properties
 	Object.keys(obj2)	// ["c"]
 
 	// log local key(enumerable true/false) value
 	Object.getOwnPropertyNames(obj2).forEach( (key) => {
 		console.log(key + ' (' +  Object.getOwnPropertyDescriptor(obj2, key).enumerable + ') ' + 		obj2[key]);
   		})
-  		
-  	// get the object pointed to by obj2.prototype 
+
+  	// get the object pointed to by obj2.prototype
 	let p1 = Object.getPrototypeOf(obj2)
 	p1 === obj1	// true
-	
+
 	// get the object pointed to by p1
 	let p2 = Object.getPrototypeOf(p1)
 	Object.getPrototypeOf(p2) === null	// shows p2 is root or top of prototype chain
-	
+
 ## Merging objects
 
 It is possible to create a new object that includes existing source objects. These source objects are then "merged" into a single *target* object.
 - targetObject = *Object.assign(target, ...sources)*
 - enumerable and local *source* properties only
 - source properties are assigned (property value updated) if the property name already exists in the *target* object
-- for properties with the same name in the source objects, the right most object is assigned to target 
-- properties that are merged into target are local to the target property. The target object holds no reference to the source objects. This can make for a "heavy" object. 
+- for properties with the same name in the source objects, the right most object is assigned to target
+- properties that are merged into target are local to the target property. The target object holds no reference to the source objects. This can make for a "heavy" object.
 
 	let obj1 = {d:4, e:5}	// source
 	let obj2 = {c:3, d:8}	// source
@@ -240,7 +245,7 @@ It is possible to create a new object that includes existing source objects. The
 	result = Object.assign({}, obj1, obj2)	// target, {c:3, d:8, e:5}
 	result = Object.assign( {a:1, b:2, c:20, d:30}, obj2, obj1)	// {a:1, b:2, c:3, d:4, e:5}
 	Object.keys(result) 	// ['a', 'b', 'c', 'd', 'e']
-	
+
 ## Program Flow
 
 Program flow can be altered by:
@@ -250,7 +255,7 @@ Program flow can be altered by:
 
 #### Standard Procedural Flow Control
 - if/else if/else
-- ternary operator, condition ? *expr1* if condition true : *expr2* if condition false, returns expression 
+- ternary operator, condition ? *expr1* if condition true : *expr2* if condition false, returns expression
 - ternary also allows multiple, comma-seperated statements to executed
 - switch statement,
 - switch statement can often be replaced by an object literal {case1:value1, case2:value2 ...}
@@ -263,7 +268,7 @@ Program flow can be altered by:
 		else {
 			// if false
 		}
-		
+
 		// if/ else if/ else
 		if (condition1) {
 			// conditionN true
@@ -277,19 +282,19 @@ Program flow can be altered by:
 		else {
 			// all conditionN false
 		}
-		
+
 		// ternary
-		let result = condition  ?  exprTrue to return if true  :  exprFalse to return if false 
-		
+		let result = condition  ?  exprTrue to return if true  :  exprFalse to return if false
+
 		let obj1 = {a:1, b:2}
 		let condition = true
 		let result = condition ? (obj1.a = 5, 10) : 20
 		// result = 10 and obj1.a = 5
-		
+
 		let condition = false
 		let result = condition ? (obj1.a = 5, 10) : 20	// result = 20
-		
-		
+
+
 		// switch statement
 		switch ('TestForThis') {
 			case 'NotTestForThis':
@@ -305,57 +310,57 @@ Program flow can be altered by:
 				// will run if no 'break'
 				// will be ignored if 'break' 	
 		}
-		 
+
 		switch ('ok') {
-			case 'notOk': 
-				break; 
-			case 'ok': 
+			case 'notOk':
+				break;
+			case 'ok':
 				console.log('ok');
 				break;
 		}
 		ok
-		
+
 		switch ('ok') {
-			case 'notOk': 
+			case 'notOk':
 				break;
-			case 'ok': 
+			case 'ok':
 				console.log('ok');
 			default:
 				console.log('default');	// no 'break' at case 'ok'
 		}
 		ok
 		default
-		
+
 		switch ('ok') {
-			case 'notOk': 
+			case 'notOk':
 				break;
-			case 'ok': 
+			case 'ok':
 				console.log('ok');
 				break;
 			default:
 				console.log('default');
 		}
 		ok
-		
+
 		// replace switch statement with object literal
 		obj = {'ok': 'ok"}
 		let switch = 'ok'
 		console.log(obj[switch])
-		ok	
-		
-		
+		ok
+
+
 #### Error Handling And Reporting		
 
-Error handling may alter program flow. 
+Error handling may alter program flow.
 - do something about the error using *try / catch / final*
-- log the error and possibly report it to a central log 
+- log the error and possibly report it to a central log
 
 *try / catch / final* usage:
 - generally should be avoided
 - use to test json data for correctness
 
 	try {
-		// 'try' block executed as normal code path 
+		// 'try' block executed as normal code path
 	}
 	catch {
 		// 'catch' block only executed if error thrown inside 'try' block
@@ -363,7 +368,7 @@ Error handling may alter program flow.
 	final {
 		// 'final' block always executed
 	}
-	
+
 	// example of checking for well-formed JSON data
 	function isJsonOk = function(jsonStr) {
 		try {
@@ -393,20 +398,20 @@ In a browser, *windows.onerror* event usage:
 		console.log('error.stack: ' + error.stack);	// shows full stact trace
 		// send errors to central server here
 	}
-	
-	
+
+
 Throwing an error:
 - always create an error object
 - *throw new Error("error message")*
 - will cause *window.onerror* event
-- the Error object will include msg, lineNo, columnNo, and error.stack properties 
+- the Error object will include msg, lineNo, columnNo, and error.stack properties
 
 
 	// how to throw an error, should generally be avoided
 	if (someError) {
 		throw new Error('some error message');
 	}
-	
+
 	// a throw can be caught with window.onerror
 	window.onerror = function(msg, url, lineNo, columnNo, error) {
 		// 'error' is an object
@@ -426,26 +431,26 @@ When a function, *fn1*, is called it is placed on the call stack. If a *fn2* is 
 		-----		-----
 		fn1			fn1					fn1					<empty>
 		-----		-----				----				----
-		
-When the call stack is empty the JavaScript engine can accept *events* on the event queue. When an *event* occurs that the JavaScript engine is looking for, a function associated with that *event* is executed. This function is placed on the call stack. 
 
-	 
+When the call stack is empty the JavaScript engine can accept *events* on the event queue. When an *event* occurs that the JavaScript engine is looking for, a function associated with that *event* is executed. This function is placed on the call stack.
+
+
 	let button = document.getElementsByTagName('button')[0];	// references a DOM element
 	// listen for event 'button clicked' on the event queue
-	button.addEventListener('click', (event) => {		// 'event' object contains a bunch of info 
+	button.addEventListener('click', (event) => {		// 'event' object contains a bunch of info
   		console.log('Button clicked');
   		runFn();
 	});
 
-	call stack					call stack							call stack	
+	call stack					call stack							call stack
 	nothing happening			button clicked						runFn() invoked
-	
+
 	<empty>						button.addEventListener				runFn
 																	button.addEventListener			
-		
+
 It is crucial to have this event model in mind when programming in JavaScript.
 
-Much of the time we are waiting for an event that has been placed on the event queue. If the call stack is empty the event is serviced immediately by running a function that we associate with that event. Untill that function returns, the call stack is busy and no further events can be accepted. When that function returns and the call stack is empty, the next queued event is accepted by the JavaScript engine. The idea is to run and complete these functions very quickly, so as to be ready to service the next event. 
+Much of the time we are waiting for an event that has been placed on the event queue. If the call stack is empty the event is serviced immediately by running a function that we associate with that event. Untill that function returns, the call stack is busy and no further events can be accepted. When that function returns and the call stack is empty, the next queued event is accepted by the JavaScript engine. The idea is to run and complete these functions very quickly, so as to be ready to service the next event.
 
 ### Callbacks and Closures
 
@@ -500,36 +505,36 @@ The global object always has a closure over any callback function. But these val
 
 
 
-				
+
 ## Explicit Loops
 
 	for (let i=0; i<x.length; i++) {
 		break;
 		continue;
 	}
-	
+
 	while (condition) {
 		break;
 		continue;
 	}
-	
+
 	do {
 		break;
 		continue;
 	} while (condition);
-	 
-	
+
+
 	for (const each of x) {
 		break;
 		continue;
 	}
-	
-	
+
+
 	for (const each in x {	// deprecated, do not use
 		break;
 		continue;
 	}
-	
+
 
 ## Implicit Looping Over Arrays
 
@@ -537,26 +542,26 @@ The global object always has a closure over any callback function. But these val
 **index**	index of element in array
 ** arr**		array
 **el0**	previous element in array
-	 
+
 	//Do something with each element but don't actually return anything using *forEach*.
 	arr.forEach((el[, index, arr]) => {} [, thisContext]);
-	
+
 	//Reduce an array to a single value using *reduce* and return a single value
 	arr.reduce((el[, el0, index, arr]) => {} [, initialValue]);
-	
+
 	//Transform every element in an array using *map* and return an array of same size.
 	arr.map((el[, index, arr]) => {} [, thisContext]);
-	
+
 	//Filter or reduce the elements in an array using *filter* and return an array.
 	arr.filter((el[, index, arr]) => {} [, thisContext]);
-	
+
 	//Returns true if every element in array satisfies a particular condition
 	arr.every((el[, index, arr]) => {} [, thisContext]);
-	
+
 	//Returns true if at least one element in array satisfies a particular condition.
 	arr.some((el[, index, arr]) => {} [, thisContext]);
-	
-## Functions	
+
+## Functions
 
 When a function is called in javascript a few properties are implicitly created.
 - **arguments**, supports indexes and length
@@ -576,7 +581,7 @@ Functions can also be defined using the arrow function syntax =>. Arrow function
 			this
 			return true;
 		}
-	
+
 		// passsing multiple arguments using spread operator ...args 	
 		function fn2(x=3, y=4, ...args) {
 			arguments; 		// [1,2,3,4,5,6]
@@ -585,13 +590,13 @@ Functions can also be defined using the arrow function syntax =>. Arrow function
 			return false;				
 		}
 		fn2(1,2,3,4,5,6)
-	
+
 		// arrow function
 		let fn3 = (x=3, y=4, ...args) => { // function body}
-	
+
 		// arrow function, implied return placed in ()
 		let fn1 = (x=1, y=2) => ({x:x}); 		// place returned object in (  )
-	
+
 ## Pain in the butt 'this'
 
 **this** is a javascript keyword that refers to an object. The difficulty is knowing exactly which object **this** is actually referring to. **this** is similar to **self** used in Python.
@@ -622,11 +627,11 @@ For an arrow function => **this** refers to what **this** is when the function i
 
 
 		// x.b uses traditional 'function' and 'this' references 'x' object
-		var x = {a:1,  b: function() {console.log(this)} }	
-		
+		var x = {a:1,  b: function() {console.log(this)} }
+
 		// y.b used arrow 'function' and 'this' references global object
-		var y = {a:1, b: () => {console.log(this)} } 
-		
+		var y = {a:1, b: () => {console.log(this)} }
+
 		var x1 = {a:1,
 				 b: () => {
 				 	console.log(this);		// global object
@@ -636,10 +641,10 @@ For an arrow function => **this** refers to what **this** is when the function i
 				 	aa()
 				 	}
 			 	};
-			 	
+
 		x1.b();	 	
-		
-		
+
+
 		var x = {a:1,
 				b:  () => {
 					console.log(this);		// global object
@@ -650,17 +655,17 @@ For an arrow function => **this** refers to what **this** is when the function i
 					}
 				};
 		x.b();
-					
-		
-		var y1 = {a:1, 
+
+
+		var y1 = {a:1,
 				b: function() {
 					console.log(this);							// y1 object
-					let aa = function() {console.log(this);};	// global object !!!!	
+					let aa = function() {console.log(this);};	// global object !!!!
 					aa();
 					}
 				}
 		y1.b();
-		
+
 		var y = {a:1,
 				 b: function() {
 				 	console.log(this);						// y1 object
@@ -668,12 +673,12 @@ For an arrow function => **this** refers to what **this** is when the function i
 				 	 aa();
 				 	 }
 		  	      }
-	
+
 		y.b();
-		
-		
-		
-			
+
+
+
+
 		d = {  a: 1,
 			  b: function() {
 			  	console.log(this);	// 'd' object
@@ -686,8 +691,8 @@ For an arrow function => **this** refers to what **this** is when the function i
 	  		}
   		};
   		d.b() ;	// d.b() calls a traditional function  			
-			
-			
+
+
 		d = {  a: 1,
 			  b:  () => {
 			  	console.log(this);	// global object
@@ -700,7 +705,7 @@ For an arrow function => **this** refers to what **this** is when the function i
 	  		}
   		};
   		d.b() ;	// d.b() calls an arrow function  			
-			
+
 ##### bind, call, apply
 
 Allows **this** object to be designated when calling a traditional function (not an arrow function).
@@ -709,23 +714,23 @@ bind
 - used to bind **this** in a callback
 - func.bind(thisArg)
 - func.bind(thisArg, arg1, arg2)
-- "thisArg" becomes the **this** in the called function 
+- "thisArg" becomes the **this** in the called function
 
 call, apply
 - invokes function immediately
 - func.call(thisArg, arg1, arg2)
 - func.apply(thisArg, [arg1, arg2])
-	
-	
+
+
 	function func() {console.log('a running'); console.log(arguments)}
 	func.call(window, 1, 2)	// arguments = [1, 2]
 	func.apply(window, [1, 2])	// arguments = [1, 2]
-	
+
 	setTimeout(a.bind(window, 1,2,3),1000)
 	// a running
-	// [1,2,3]	
-	
-			
+	// [1,2,3]
+
+
 ## Useful Items
 
 Spread operator
@@ -737,12 +742,11 @@ Spread operator
 	// expand function arguments
 	functiofn1 = (x=1, y=2) => ({x:x});n fn(...args) {args; // [10, 20, 30]}
 	fn(10,12,30)
-	
+
 	// expand in array
 	arr1 = [1, 2, 3]
 	arr2 = [...arr1, 4, 5, 6]			// [1, 2, 3, 4, 5, 6]
-	
+
 	// copy an array
 	arr1 = [1, 2, 3]
 	arr2 = [...arr1]				// copy of arr1
-	
