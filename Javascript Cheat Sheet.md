@@ -47,14 +47,17 @@ Primitives (number, string, boolean)
 Non-primitives ([], {}, function)
 - always passed by reference
 
+'''javascript
 var x = 3, y = 4;
-- scope is between { } of function and it's as if variable is declared immediately after the opening {, sometimes called hoisting
+// scope is between { } of function and it's as if variable is declared immediately after the opening {, sometimes called hoisting
+// if var is declared in the global scope, think of the globale scope being enclosed with an opening { and closing }
 
 let x = 3, y = 4;
-- block scope between {}, also checks if identifier has already been used
+// block scope between {}, also checks if identifier has already been used
 
 const x = 3, y = 4;
-- same as let scope but checks identifier and type
+// same as let scope but checks identifier and type
+'''
 
 **var** is replaced by **let** and **const**.
 
@@ -65,11 +68,11 @@ Use **const** before **let** because it prevents overwriting a variable and also
 Objects are a collection of key and value pairs. Every object has a special pointer to another object. We call this pointer a **prototype**.  
 
 A key is a string. If key is a "valid" string we can use the dot operator. ES6 now allows for a numeric key.
-
+'''javascript
 	const obj = Object.create(null)	// creates an empty object
 	obj.key		// undefined, use this syntax for a valid key string
 	obj['key']	// also undefined,  use this syntax for an invalid key string
-
+'''
 In javascript a key is generally refered to as a **property**.  To get an array of the enumerable keys or properties of an object use *Object.keys(obj)*.
 
 Every **propery** (key) has some meta information.
@@ -79,7 +82,7 @@ Every **propery** (key) has some meta information.
 - value, set the value associated with the property  
 
 To read **property** meta information use *Object.getOwnPropertyDescriptor(obj, 'property')*.
-
+'''javascript
 	const obj = Object.create(null)	// create empty object
 	Object.defineProperty(	obj,	// object onto which property is attached
 							 'a',		// property name
@@ -90,6 +93,7 @@ To read **property** meta information use *Object.getOwnPropertyDescriptor(obj, 
 	o.a		// value 1
 	Object.getOwnPropertyDescriptor(obj, 'a')	// read property meta information
 	// {value: 1, writable: true, enumerable: true, configurable: true}
+'''
 
 **Prototype chain**
 
