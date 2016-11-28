@@ -152,6 +152,7 @@ Method sharing can be done with each object in the prototype chain. Remember a p
 
 **Shorthand With Object Literals**
 
+```javascript
 	let obj = {a:1, b:2, c:3}	// object literal shorthand
 
 	/* Approximately equivalent to
@@ -159,6 +160,7 @@ Method sharing can be done with each object in the prototype chain. Remember a p
 	*	obj.a = 1
 	*	obj.b = 2
 	*	obj.c = 3 */
+```
 
 An object literal always sets the newly created object (*obj* in this case) to the object located at *Object.prototype*. This object has a number of standard methods.
 - constructor
@@ -169,6 +171,7 @@ An object literal always sets the newly created object (*obj* in this case) to t
 - *toString*(), string representation of object, often overwritten
 - *valueOf*(), primitive value
 
+```javascript
 	let obj = Object.prototype
 	obj.constructor	// reference to a function
 	obj.hasOwnProperty('hasOwnProperty')	// true
@@ -176,6 +179,7 @@ An object literal always sets the newly created object (*obj* in this case) to t
 	obj.propertyIsEnumerable('toString')	//false
 	obj.toString()	// "[object Object]"
 	obj.valueOf()	// Object
+```
 
 Object literal syntax has evolved significantly with new ES6 features.
 - *\_\_proto\_\_* sets prototype object
@@ -183,6 +187,7 @@ Object literal syntax has evolved significantly with new ES6 features.
 - another shorthand method with just *methodName() { }*
 - computed, dynamic property names *[ 'prop_' + (() => 42)() ]: 42*
 
+```javascript
 	let obj1 = {a:1, b:function() {console.log("function b")}}
 	// create obj2
 	let obj2 = {	c:5,
@@ -200,7 +205,7 @@ Object literal syntax has evolved significantly with new ES6 features.
 	obj2.doFn()	// 'doFn', this refers to obj2
 	obj2.3.141592653589793	// syntax error
 	obj2[3.141592653589793]	// 42
-
+```
 
 
 **Masking references in local object where same reference is on the prototype chain**
@@ -222,7 +227,7 @@ To get properties of an object:
 - *Object.keys(obj)*, local enumerable properties
 - *for (property in obj) {console.log(property)}*, local and prototype objects enumerable properties
 
-
+```javascript
 	// create obj1 as an object literal
 	let obj1 = {a:1, b:function() {console.log("function b")}}
 
@@ -250,6 +255,7 @@ To get properties of an object:
 	// get the object pointed to by p1
 	let p2 = Object.getPrototypeOf(p1)
 	Object.getPrototypeOf(p2) === null	// shows p2 is root or top of prototype chain
+```
 
 ## Merging objects
 
@@ -260,6 +266,7 @@ It is possible to create a new object that includes existing source objects. The
 - for properties with the same name in the source objects, the right most object is assigned to target
 - properties that are merged into target are local to the target property. The target object holds no reference to the source objects. This can make for a "heavy" object.
 
+```javascript
 	let obj1 = {d:4, e:5}	// source
 	let obj2 = {c:3, d:8}	// source
 	// notice how right most obj1.d takes precedence
@@ -268,6 +275,7 @@ It is possible to create a new object that includes existing source objects. The
 	result = Object.assign({}, obj1, obj2)	// target, {c:3, d:8, e:5}
 	result = Object.assign( {a:1, b:2, c:20, d:30}, obj2, obj1)	// {a:1, b:2, c:3, d:4, e:5}
 	Object.keys(result) 	// ['a', 'b', 'c', 'd', 'e']
+```
 
 ## Program Flow
 
@@ -283,6 +291,7 @@ Program flow can be altered by:
 - switch statement,
 - switch statement can often be replaced by an object literal {case1:value1, case2:value2 ...}
 
+```javascript
 		// Standard Procedural Flow Control
 		// if else
 		if (condition) {
@@ -366,11 +375,11 @@ Program flow can be altered by:
 		ok
 
 		// replace switch statement with object literal
-		obj = {'ok': 'ok"}
+		obj = {'ok': 'ok'}
 		let switch = 'ok'
 		console.log(obj[switch])
 		ok
-
+```
 
 #### Error Handling And Reporting		
 
@@ -382,6 +391,7 @@ Error handling may alter program flow.
 - generally should be avoided
 - use to test json data for correctness
 
+```javascript
 	try {
 		// 'try' block executed as normal code path
 	}
@@ -401,8 +411,10 @@ Error handling may alter program flow.
 			// note: don't throw an error
 			return false;
 		}
-			returnt true;
+			return true;
+		};
 
+```
 
 In a browser, *windows.onerror* event usage:
 - the *windows.onerror* event is fired when an error occurs
