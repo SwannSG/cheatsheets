@@ -47,8 +47,6 @@ Primitives (number, string, boolean)
 Non-primitives ([], {}, function)
 - always passed by reference
 
-
-
 ```javascript
 var x = 3, y = 4;
 	// scope is between { } of function and it's as if variable is declared
@@ -68,11 +66,26 @@ const x = 3, y = 4;
 
 Use **const** before **let** because it prevents overwriting a variable and also does type checking.  
 
+### Indentifier valid names
+
+- Don't use a keyword
+- letters, numbers, underscore, dollar (_abc, $abc, abc, abc123)
+- Cannot start with a number (~~2be~~)
+
+Propety names on objects follow similar rules. With the exception of numbers. ES6 allows numbers as propery name. But they can only be referenced via square brackets and not through the dot operator.
+
+```javascript
+let a = {0:'a', 1:'b'}
+a.0		// throws error
+a[0]	// 'a'
+```
+
 ## Object
 
 Objects are a collection of key and value pairs. Every object has a special pointer to another object. We call this pointer a **prototype**.  
 
 A key is a string. If key is a "valid" string we can use the dot operator. ES6 now allows for a numeric key.
+
 ```javascript
 	const obj = Object.create(null)	// creates an empty object
 	obj.key		// undefined, use this syntax for a valid key string
@@ -122,6 +135,7 @@ When we look for a property on an object:
 
 Method sharing can be done with each object in the prototype chain. Remember a property can have a function as a value. 	
 
+```javascript
 	// 'person' contains the method to be shared
 	let person = Object.create(null)
 	Object.defineProperty(person,  'fullname',
@@ -134,7 +148,7 @@ Method sharing can be done with each object in the prototype chain. Remember a p
 	john.firstname = 'John'	// local property
 	john.surname = 'Smith'	// local property
 	john.fullname()			// John Smith, function is found on prototype object 'person'
-
+```
 
 **Shorthand With Object Literals**
 
