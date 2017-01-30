@@ -82,7 +82,7 @@ a[0]	// 'a'
 
 ## Object
 
-Objects are a collection of key and value pairs. Every object has a special pointer to another object. We call this pointer a **prototype**.  
+Objects are a collection of key and value pairs. Every object has a special pointer to another object. We this pointer a **prototype**.  
 
 A key is a string. If key is a "valid" string we can use the dot operator. ES6 now allows for a numeric key.
 

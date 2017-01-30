@@ -322,3 +322,93 @@ fn1(1,2, {c:3, f:4}); // inside fn1: a=1, b=2, c=3 d=undefined, e=undefined, f=4
 fn1(1,2); // 1 2 undefined undefined undefined undefined
 ```
 ## Symbols and Symbol Properties
+
+Primitives are *strings, numbers, Booleans, null , undefined* and now *symbols*.
+Symbols provide a unique reference to a property. These Symbol properties are not enumerable.
+
+```javascript
+let firstname = Symbol('firstname'); // Symbol(firstname)
+let surname = Symbol('surname'); // Symbol(surnname)
+let name = {
+  [firstname]: 'Joe',
+  [surname]: 'Bloggs'
+}
+// Object {Symbol(firstname): "Joe", Symbol(surname): "Bloggs"}
+name[firstname] = 'Skaap';
+```
+#### Global Symbols
+
+```javascript
+// 'app_name' placed in global symbol registry
+let gSym1 = Symbol.for('app_name');
+let gSym2 = Symbol.for('app_name');
+(gSym1 === gSym2) // true
+
+// non-global Symbols are always unique
+sym1 = Symbol('app_name');
+sym2 = Symbol('app_name');
+(sym1 === sym2) // false
+```
+#### Retrieving symbols from an object
+
+```javascript
+// retrieves all enumerable properties on an object
+Object.keys(name); // empty array []
+
+// retrieves all properties in an object but not Symbol properties
+Object.getOwnPropertyNames(name); // empty array []
+
+// retrieves all Symbol properties
+Object.getOwnPropertySymbols() // [Symbol(firstname), Symbol(surname)]
+```
+
+#### Exposing Internal Operations with Well-Known Symbols
+
+Allows access to certain internal operations within ECMAscript.
+
+## Sets and Maps
+
+#### Sets
+
+```javascript
+let set = new Set(); // Set {}
+set.add(3); // Set {3}
+set.delete(3) // Set {}
+set = new Set([1, 2, 3, 4, 5, 5, 5, 5]); // Set {1, 2, 3, 4, 5}
+// looping thro' set
+set.forEach(function(value, key, ownerSet) {
+    console.log(value, key, ownerSet); // value = key, ownerSet = Set {1, 2, 3, 4, 5}
+})
+// convert set to array
+arr = [...set];
+```
+#### Weak Sets
+
+```javascript
+let weakSet = new WeakSet();
+weakSet.add({1:1})  // can only add a {} object or [] array  to a weak set
+```
+
+#### Maps
+
+Maps allow key and value association. (why use maps instead of an object literal).
+- Used for a key-value collection.
+- Key can be an object.
+
+```javascript
+let map = new Map();
+map.set('key', 'value'); // Map {"key" => "value"}
+map.delete('key'); // Map {}
+
+map.set('key', 'value1');
+map.get('key') // Map {"key" => "value1"}
+map.clear() // delete all entries
+
+map.set('key1', 'value1');
+map.set('key2', 'value2');
+map.forEach(function(val, key) {
+  console.log(val, key);
+  })
+
+map.set({a:1, b:2}, 10);
+```
