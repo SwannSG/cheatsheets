@@ -277,6 +277,113 @@ It is possible to create a new object that includes existing source objects. The
 	Object.keys(result) 	// ['a', 'b', 'c', 'd', 'e']
 ```
 
+## ES6 Class Syntax
+
+```javascript
+class Rectangle {											// class
+    constructor (x, y) {							// constructor
+        this.x = x;
+        this.y = y;
+    }
+		static doubleArea(x,y) {					// static
+			return 2 * x * y;
+		}
+    area () {
+        return this.x * this.y;
+    }
+		_privateMethod () {
+				return true;
+		}
+		toString() {			// how instance should be represented as a string
+			return `Rectangle(x=${this.x}, y=${this.y})`; // notice backticks to allow string subbstitution with template strings
+		}
+};
+
+let a = new Rectangle(5,3)
+a.area()		// returns area of rectangle
+a._privateMethod()	// bad practice to call private method directly. Avoid !
+a.prototype.doubleArea(a.x, a.y)		// 12
+a.toString();
+```
+We use convention (much like Python) to show _private and public properties and methods. It is also not necessary to have the *area* method attached to each instance created using *class Rectagle*. We want the instance to be as light as possible. Rather we can place the *area* method on the prototype using the *static* keyword.
+
+The above is equivqlent to the old style using a function below.
+
+```javascript
+function Rectangle(x, y) {
+	this.x = x;
+	this.y = y
+	this.area = function() {
+		return this.x * this.y;
+	};
+	this._privateMethod = function() {
+		return true;
+	};
+this.toString = function() {
+		return `Rectangle(x=${this.x}, y=${this.y})`;
+}
+}
+Rectangle.prototype.doubleArea = function(x, y) {
+		return 2 * x * y;
+}
+
+r = new Rectangle(3,2);
+r.area();		// 6
+r.doubleArea(this.x, this.y);
+r.toString();
+```
+
+
+
+
+```javascript
+class Rectangle {
+    constructor (x, y) {
+        this.x = x;
+        this.y = y;
+    }
+    static area (a, b) {
+        return a*b;
+    }
+};
+
+let r = new Rectangle(3,4);
+r.constructor.area(r.x, r.y);
+```
+
+```javascript
+class Example {
+	constructor(x, y, z) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
+	}
+	sum() {
+		return this.x + this.y + this.z;
+	}
+	doubleSum() {
+		return this.sum() * 2;		// note reference to "sum" method
+	}
+	addProperty(value) {
+		this.addedProperty = value;
+	}
+	toString() {			// how instance should be represented as a string
+		return `Example(x=${this.x}, y=${this.y}, z=${this.z})`; // notice backticks to allow string subbstitution with template strings
+	}
+};
+
+r = new Example(1,2,3);
+r.sum();
+r.doubleSum();
+r.toString();					// "Example(x=1, y=2, z=3)"
+```
+
+
+## Template Strings
+
+Introduced with ES6.
+
+
 ## Program Flow
 
 Program flow can be altered by:
@@ -512,11 +619,14 @@ The global object always has a closure over any callback function. But these val
 			      console.log('fn3');
 			      let c = 30;
 			      console.log('start setTimeout');
-			      // function 'timeout' is a callback
-			      // this is the function that will run when the timer expires event occurs on the event queue
-			      // although we have exited 'runFn' when the 'timeout' function is executed
-			      // the function still has access to the values of a, b, c
-			      // These references are maintained because js has the property of closures
+			      // Function 'timeout' is a callback
+			      // This is the function that will run when the timer
+						//  expires eventoccurs on the event queue.
+			      // Although we have exited 'runFn' before the 'timeout'
+						// function is executed.
+			      // The function still has access to the values of a, b, c.
+			      // These references are maintained because js has
+						// the property of closures.
 			      setTimeout(function timeout() {
 				console.log('timeout');
 				console.log(a);
