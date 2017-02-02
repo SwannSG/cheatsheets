@@ -406,9 +406,162 @@ map.clear() // delete all entries
 
 map.set('key1', 'value1');
 map.set('key2', 'value2');
+map.set({a:1, b:2}, 10);
 map.forEach(function(val, key) {
   console.log(val, key);
+  console.log(map.has(key)); // true
   })
+```
+#### WeakMaps
 
-map.set({a:1, b:2}, 10);
+Similar to maps but not sure why we use them.
+
+## Generators and Iterators
+
+#### Generator
+Inside the generator function
+- function defined with *function \*myGen(x)*
+- yield keyword which returns an object {val: someVal, done: someBool}.
+- when the yield is encountered the state of the function is perfectly maintained.
+
+How to interact with the generator function
+- the first time a generator function is initialised it does not actually run *gen = myGen()*.
+- we call the generator function each time using *gen.next()*.
+- when the generator is complete the object *(val: someVal, done: true)*, done is set to true
+
+Gotchas
+- cannot use arrow function for a generator function
+- *yield* immediate parent function must be a generator
+
+```javascript
+function *gen() { // note asterisk in front of function name
+  yield 'abc';    // new keyword called 'yield'
+  yield 'def';
+}
+let iter = gen();
+iter.next();  // Object {value: "abc", done: false}
+iter.next();  // Object {value: "def", done: false}
+iter.next();  // Object {value: undefined, done: true} // 'done' is set to true
+```
+
+```javascript
+function* gen(arr) {
+  arr.forEach((x) => {yield x;})  // throws an error, yield can only be used directly (immediate parent) inside a generator function
+}
+iter = gen([1,2,3,4])
+
+function* gen(arr) {
+  for (let i=0; i= arr.length; i++) {
+    yield arr[i];
+  }
+}
+iter = gen([2,3]);
+iter.next();  // Object {value: 2, done: false}
+iter.next();  // Object {value: 3, done: false}
+iter.next();  // Object {value: undefined, done: true}
+
+// generator function expression
+let gen = function*() {}
+```
+##### Make a collection iterable
+
+Suppose we have a collection of objects, and we wish to make these iterable. In this context iterable means we want the *for (let item of collection)* to work in a standard manner.
+
+```javascript
+collection = {
+  items: [1, 2, 3],    // standard array
+  *[Symbol.iterator]() {
+      for (let item of this.items) {
+        yield item; // yield returns object {value: item, done: boolean}
+      }
+    }
+}
+for (item of collection) {
+  console.log(item)   // 1, 2, 3
+}
+```
+ES6 has three standard collection types. Arrays, Maps, and Sets. These all have standard methods to "extract" data in the *for/of loop*.
+- entries(), [key, value]
+- values() default and returns just value
+- keys() returns just the keys
+
+```javascript
+let arr = [1,2,3];
+for (let each of arr) {
+  each  // value 1,2,3
+}
+
+// these are identical
+for (let each of arr.entries()) {
+  each  // [0, 1], [1, 2], .. [key, value]
+}
+for (let [key, value] of arr.entries()) {
+  key, value  
+}
+// end these are identical
+
+for (let each of arr.keys()) {
+  each  // 0,1,2
+}
+```
+#### Standard string iterators
+
+We can also iterate over a string using for/of construct
+
+```javascript
+s = 'abcdefghi'
+for (x of s) { console.log(); } // a, b, c, ...
+```
+
+#### Advanced stuff
+
+We can pass arguments via *iter.next(arg1)* to the next yield statement.
+It is also possible to throw errors *iter.throw(new Error("Error!")))*.
+
+```javascript
+function* gen() {
+  let first = yield 1;
+  console.log(first);
+  let second = yield first + 3;
+}
+
+iter = gen();
+iter.next();  // 1
+iter.next(10);  // 13
+```
+Generators can also delegate (call) to other generators.
+
+```javascript
+function* gen1() {
+  yield 'gen1-1';
+  yield 'gen1-2';
+}
+function* gen2() {
+  yield 'gen2-1';
+  yield 'gen2-2';
+}
+function* gen0() {  // gen0 calls other generators
+  yield 1;
+  yield *gen1();  // note the *
+  yield 2;
+  yield *gen2();
+}
+iter.next() //Object {value: 1, done: false}
+iter.next() //Object {value: "gen1-1", done: false}
+iter.next() // Object {value: "gen1-2", done: false}
+iter.next() // Object {value: 2, done: false}
+iter.next() // Object {value: "gen2-1", done: false}
+iter.next() // Object {value: "gen2-2", done: false}
+iter.next() // Object {value: undefined, done: true}
+```
+A task runner. Requires more work. Can be used with promises to simplify asynchronous programming.
+
+```javascript
+function* run() {
+  let todo_high_level = [ 'do1', 'do2', 'do3'] // high level todo
+  let todo_detail = todo.map( (x,i) => {return {todo: x, timer: 2*i + 2};}) // translate high level todo to detail view
+  setTimeout(function() {}, each.timer)
+}
+https://github.com/nicholaswyoung/nodevember-2015/blob/master/examples/generator-promises.js
+
 ```
