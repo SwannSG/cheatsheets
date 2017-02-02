@@ -705,3 +705,59 @@ inst = new Test('x');
 inst.myMethod() // 'Method with computed name "myMethod"'
 ```
 Generator methods can also be used *\*generator*. To itterate over a collection class use *\*[Symbol.iterator]()* as the method name.
+
+Static method
+
+```javascript
+class Test {
+  constructor(x) {
+    this._x = x;
+  }
+
+  one() {   // on the prototype of the instance
+    console.log('one');
+  }
+
+  static one() { // accessed by Test.one()
+    console.log(this._x); // undefined, there is no access to the instance property !
+    console.log('static one');
+  }
+}
+inst = new Test(3);
+inst.one(); // 'one'
+Test.one(); // 'static one'
+```
+#### Inheritance
+
+Inheritance is refered to as "derived classes" in ES6.
+
+```javascript
+class Human {
+  constructor() {
+    this.arms = 2;
+    this.legs = 2;
+  }
+  armsAndLegs()  {
+    return (this.arms + this.legs)*2;
+  }
+}
+
+class Male extends Human {
+  constructor() {
+    super();  // brings 'this' to life
+    this.sex = 'male'
+  }
+
+  armsAndLegs()  {
+    return this.arms + this.legs;
+  }
+
+  protoArmsAndLegs() {
+    return super.armsAndLegs()  // calls armsAndLegs on the prototype
+  }
+
+}
+m = new Male(); // Male {arms: 2, legs: 2, sex: "male"}
+m.protoArmsAndLegs() // 8
+m.armsAndLegs() // 4
+```
