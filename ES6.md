@@ -546,6 +546,7 @@ function* gen0() {  // gen0 calls other generators
   yield 2;
   yield *gen2();
 }
+iter = gen0();
 iter.next() //Object {value: 1, done: false}
 iter.next() //Object {value: "gen1-1", done: false}
 iter.next() // Object {value: "gen1-2", done: false}
@@ -554,14 +555,153 @@ iter.next() // Object {value: "gen2-1", done: false}
 iter.next() // Object {value: "gen2-2", done: false}
 iter.next() // Object {value: undefined, done: true}
 ```
-A task runner. Requires more work. Can be used with promises to simplify asynchronous programming.
-
-```javascript
-function* run() {
-  let todo_high_level = [ 'do1', 'do2', 'do3'] // high level todo
-  let todo_detail = todo.map( (x,i) => {return {todo: x, timer: 2*i + 2};}) // translate high level todo to detail view
-  setTimeout(function() {}, each.timer)
-}
+Using iterators with promises to simplify asynchronous programming.
 https://github.com/nicholaswyoung/nodevember-2015/blob/master/examples/generator-promises.js
 
+```javascript
+const messages = [    // array of messages
+  "Hello, Nodevember.",
+  "It's time to talk about generators...",
+  "Generators are part of the ES2015 specification,",
+  "and they allow us to handle variable length sequences with ease."
+];
+
+// returns a promise
+function promise(msg) {
+  return new Promise(function(resolve, reject) {
+    resolve(msg); // value of promise resolve
+    })
+}
+
+// generator
+function* gen(msgs) {
+  for (val of msgs) {
+    yield promise(val);
+  }
+}
+
+// getting all the promises in sequence
+iter = gen(messages)
+while (true) {
+  let result = iter.next()
+  if (result.done) { break;}
+  console.log(result);
+}
 ```
+## Classes
+
+JavaScript is not a class based language. However, it can be made to mimic class type behaviour. Below is the classic construct pre-classes.
+- local properties and method in the constructor are on the instance
+- properties and methods are placed on the prototype using *Animal.prototype*
+
+```javascript
+// Animal class constructor
+function Animal(type) {
+  this.type = type;  // property that will be available on the instance
+}
+// add a method to Animal
+// method is on the prototype not the instance
+Animal.prototype.getType = function() {
+  console.log('I am a ' + this.type);
+}
+
+let dog = new Animal('dog');
+dog.getType() // 'I am a dog'
+```
+
+ES6 formalised classes that captures best practices.
+
+```javascript
+class PersonClass {
+  // equivalent of the Animal constructor
+  constructor(name) { // name is a passed argument
+    // own instance properties and methods are created here, and only here, in the constructor
+    this.name = name;   // property on the instance
+  }
+  // equivalent of PersonType.prototype.sayName
+  sayName() { // method on the prototype
+    console.log(this.name);
+  }
+}
+// instantiate an instance of the class PersonClass
+person =  new PersonClass('steve');
+person.sayName() // 'steve'
+
+person instanceof PersonClass // true
+person instanceof Object // true
+typeof PersonClass // function
+```
+We can also have a class expression'
+
+```javascript
+let PersonClass = class { // anonyous class
+}
+
+let PersonClass = class PersonClass2 { // named class expression
+}
+```
+Classes are first class objects and may be passed into functions.
+
+```javascript
+// immediatle invoked class - singleton
+let person = new class {
+  constructor(name) {
+    this.name = name;
+  }
+  sayName() {
+    console.log(this.name);
+  }
+}("Nicholas");
+```
+*Accessor Methods* create getter and setters to access a constructor property. Use keywords *set, get*
+
+```javascript
+class someClass {
+  constructor(sound) {
+    this._sound = '' // treat as a private property because of underscore
+    if (this._validateSound(sound)) {
+      this._sound = sound;
+    this._show = false;
+  }
+
+// validate any value assigned to this._sound
+  _validateSound(sound) {
+    if (sound === 'loud' || sound === 'soft') {
+      return true;
+    }
+    return false;
+  }
+  get sound() {
+    console.log('get sound');
+    return this._sound;
+  }
+  set sound(x) {
+    console.log('set sound')
+    // do some error checking/ validation here
+    if (this._validateSound(x)) {
+      this._sound = x;  
+    }
+  }
+}
+
+inst = new someClass('loud');
+inst.sound // 'get sound', 'loud' - uses getter
+inst.sound = 'soft' // 'set sound', 'soft' - uses setter
+```
+
+Computed method names. Also can apply to getter and setter names.
+
+```javascript
+computedName = 'myMethod';
+class Test {
+  constructor(x) {
+    this._x = x;
+  }
+  [computedName]() {
+    console.log('Method with computed name "myMethod"')
+  }
+}
+inst = new Test('x');
+inst.myMethod() // 'Method with computed name "myMethod"'
+```
+Generator methods can also be used *\*generator*. To itterate over a collection class use *\*[Symbol.iterator]()* as the method name.
