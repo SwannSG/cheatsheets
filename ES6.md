@@ -731,6 +731,10 @@ Test.one(); // 'static one'
 
 Inheritance is refered to as "derived classes" in ES6.
 
+*super()* in the constructor() of the derived class.
+- brings 'this' to life
+- exposes the parent properties
+
 ```javascript
 class Human {
   constructor() {
@@ -761,3 +765,106 @@ m = new Male(); // Male {arms: 2, legs: 2, sex: "male"}
 m.protoArmsAndLegs() // 8
 m.armsAndLegs() // 4
 ```
+static method is also inherited and placed on the derived class.
+
+```javascript
+class Test {
+  constructor() {
+    this.a = 'a'
+  }
+  static mouse() {
+    console.log('static mouse');
+  }
+}
+class Best extends Test {
+  constructor() {
+    super();
+  }
+}
+inst = new Best()
+Best.mouse() // 'static mouse'
+```
+Derived classes from expressions
+
+```javascript
+function Rectangle(length, width) { // constructor function
+  this.length = length;
+  this.width = width;
+}
+Rectangle.prototype.getArea = function() {
+  return this.length * this.width;
+}
+function getBase() {
+  return Rectangle;
+}
+
+class Square extends getBase() {  // getBase feeds in Rectangle class
+  constructor(length) {
+    super(length, length) // passes length into Rectangle.length, Rectangle.height
+  }
+}
+sq = new Square(3);
+sq.getArea() // 9
+sq isinstance of Rectangle // true
+```
+Derived classes using mixins
+
+```javascript
+let SerializableMixin = {
+  serialize() {
+    return JSON.stringify(this);
+  }
+};
+let AreaMixin = {
+  getArea() {
+    return this.length * this.width;
+  }
+};
+function mixin(...mixins) {
+  let base = function() {};
+  Object.assign(base.prototype, ...mixins);
+  return base;
+}
+class Square extends mixin(AreaMixin, SerializableMixin) {
+  constructor(length) {
+    super();
+    this.length = length;
+    this.width = length;
+  }
+}
+
+Inheritance from built-in types is now supported
+
+```javascript
+class myArray extends Array {
+  skaap() {
+    console.log('skaap');
+  }
+}
+my_array = new myArray();
+my_array.skaap() // 'skaap'
+```
+## Improved Array Capabilities
+
+```javascript
+arr = Array.of(1,2,3) // [1,2,3]
+
+// create array from something
+arr = Array.from(arguments) //
+arr = Array.from(arguments, (value) => value + 1) // mapping function
+
+// find first occurence of
+arr.find()
+arr.findIndex()
+
+// fill an array with a particula value
+arr.fill()
+
+arr.copyWithin()
+```
+
+#### Typed Arrays
+
+For speed. These arrays are numeric only. *ArrayBuffer* and *DataView*. Very specialised area for high preformance.
+
+## Pomises and Asynchronous programming
