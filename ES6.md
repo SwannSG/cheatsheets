@@ -868,3 +868,41 @@ arr.copyWithin()
 For speed. These arrays are numeric only. *ArrayBuffer* and *DataView*. Very specialised area for high preformance.
 
 ## Pomises and Asynchronous programming
+
+The promises lifecycle.
+- pending state where the promise is considered unsettled.
+- settled state where we have either success (fulfilled) or failure (rejected).
+
+```javascript
+promise = somethingThatReturnsAPromise;
+promise.then(function_to_run_if_promise_fulfilled(successData), function_to_run_if_promise_fails(errorData)) // then
+
+let myPromise = new Promise( (resolve, reject) => {
+  setTimeout( () => {
+    resolve('Good to go');
+  }, 3000 )
+});
+
+myPromise.then( res => {
+  console.log(res); // 'Good to go'
+})
+```
+
+
+```javascript
+let data = {}
+let exitLoop = false;  
+p1 = fetch('https://jsonplaceholder.typicode.com/posts'); // returns a promise immediately
+p2 = p1.then(x => {
+    exitLoop = true;
+    return x.json()
+  });
+p2.then(x => { data=x});
+while (true) {
+  console.log(p1);
+  console.log(p2);
+  console.log('');
+  if (exitLoop) {
+    break;
+  }
+```
