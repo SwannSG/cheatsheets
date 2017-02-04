@@ -869,9 +869,30 @@ For speed. These arrays are numeric only. *ArrayBuffer* and *DataView*. Very spe
 
 ## Pomises and Asynchronous programming
 
-The promises lifecycle.
-- pending state where the promise is considered unsettled.
-- settled state where we have either success (fulfilled) or failure (rejected).
+In nodejs traditional callback handling can lead to the "christmas tree". Also callbacks are chained serially. Maybe, we want a couple event to run in parallel and assemble the result.
+
+```javascript
+// readFile promises to complete at some point in the future
+let promise = readFile("example.txt");
+```
+Notice the *promise* is immediately assigned. Actually, reading the file will happen later. The promise is an object that has two states.
+- pending state where the promise is considered unsettled
+- settled state where we have either success (fulfilled) or failure (rejected)
+
+This state is held in an internal property called [[PropertyState]] = pending, fulfilled, rejected. There is a *promise.then(fulfilledFunction(), rejectedFunction())* method on any promise. When the state of a promise changes, typically from pending to settled, either the *fulfilledFunction()* or *rejectedFunction()* will run.
+
+The argumnction()* will rune*nts to *promise.then()* are fulfilledFunction(), optional:
+- no arguments passed to *promise.then()* // what does this do ?
+- just a fullfilled function *promise.then(fulfilledFunction())*
+- just a reject function  *promise.then(null, rejectedFunction())*
+- both a fulfilled and reject function *promise.then(fulfilledFunction(), rejectedFunction())*
+
+
+
+
+
+
+
 
 ```javascript
 promise = somethingThatReturnsAPromise;
