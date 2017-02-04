@@ -879,15 +879,15 @@ Notice the *promise* is immediately assigned. Actually, reading the file will ha
 - pending state where the promise is considered unsettled
 - settled state where we have either success (fulfilled) or failure (rejected)
 
-This state is held in an internal property called [[PropertyState]] = pending, fulfilled, rejected. There is a *promise.then(fulfilledFunction(), rejectedFunction())* method on any promise. When the state of a promise changes, typically from pending to settled, either the *fulfilledFunction()* or *rejectedFunction()* will run.
+This state is held in an internal property called [[PropertyState]] = pending, fulfilled, rejected. There is a *promise.then(fulfilledFunction(), rejectedFunction())* method on any promise. When the state of a promise changes, from pending to settled, either the *fulfilledFunction()* or *rejectedFunction()* will run.
 
-The argumnction()* will rune*nts to *promise.then()* are fulfilledFunction(), optional:
+The arguments for *promise.next()* are optional:
 - no arguments passed to *promise.then()* // what does this do ?
 - just a fullfilled function *promise.then(fulfilledFunction())*
 - just a reject function  *promise.then(null, rejectedFunction())*
 - both a fulfilled and reject function *promise.then(fulfilledFunction(), rejectedFunction())*
 
-
+There is also a *promise.catch(rejectedFunction())*. This is equivalent to *promise.then(null, rejectedFunction())*.
 
 
 
