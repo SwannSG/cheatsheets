@@ -869,61 +869,108 @@ For speed. These arrays are numeric only. *ArrayBuffer* and *DataView*. Very spe
 
 ## Pomises and Asynchronous programming
 
-In nodejs traditional callback handling can lead to the "christmas tree". Also callbacks are chained serially. Maybe, we want a couple event to run in parallel and assemble the result.
+A promise has 3 states.
+- pending
+- settled resolved
+- settled rejected
+
+Example of 3 states with a *get* request to a server.
+- pending. We are waiting for a response from the server.
+- settled resolved. We have a 200 positive response from the server.
+- settled rejected. We have a 404 negative response from the server.
+
+How is a promise created ?
+
+A promise is a special object, created from the Promise class.
+
+*promise = new Promise( executorFunction( xResolve, yReject ) {} )*
 
 ```javascript
-// readFile promises to complete at some point in the future
-let promise = readFile("example.txt");
-```
-Notice the *promise* is immediately assigned. Actually, reading the file will happen later. The promise is an object that has two states.
-- pending state where the promise is considered unsettled
-- settled state where we have either success (fulfilled) or failure (rejected)
-
-This state is held in an internal property called [[PropertyState]] = pending, fulfilled, rejected. There is a *promise.then(fulfilledFunction(), rejectedFunction())* method on any promise. When the state of a promise changes, from pending to settled, either the *fulfilledFunction()* or *rejectedFunction()* will run.
-
-The arguments for *promise.next()* are optional:
-- no arguments passed to *promise.then()* // what does this do ?
-- just a fullfilled function *promise.then(fulfilledFunction())*
-- just a reject function  *promise.then(null, rejectedFunction())*
-- both a fulfilled and reject function *promise.then(fulfilledFunction(), rejectedFunction())*
-
-There is also a *promise.catch(rejectedFunction())*. This is equivalent to *promise.then(null, rejectedFunction())*.
-
-
-
-
-
-
-```javascript
-promise = somethingThatReturnsAPromise;
-promise.then(function_to_run_if_promise_fulfilled(successData), function_to_run_if_promise_fails(errorData)) // then
-
-let myPromise = new Promise( (resolve, reject) => {
-  setTimeout( () => {
-    resolve('Good to go');
-  }, 3000 )
-});
-
-myPromise.then( res => {
-  console.log(res); // 'Good to go'
+promiseA = new Promise( function myExecutorFunction(resolve, reject, success=true) {
+  success ? resolve('valueWeWantToSendToThen') : reject('valueWeWantToSendToCatch')  
 })
-```
 
+promiseA
+  .then( x => { console.log(x); }) // 'valueWeWantToSendToThen'
+  .catch( x => {console.log(x); }) // 'valueWeWantToSendToCatch'
+```
+- the Promise constructor assigns the names of the arguments to special, pre-written functions. You don't have to write them.
+- typical names are "resolve" and "reject".
+- *resolve(valueWeWantToSendToThen)* or *reject(valueWeWantToSendToCatch)*
+- the *valueWeWantToSend...* can be a primitive, array, object, or anything. But only a single argument can be passed.
+
+What happens inside the promiseA.then( fn1(x) ) ?
+- when promiseA settles, fn1(x) is executed.
+- it takes a single argument, set inside promiseA by resolve(valueForNext)
+
+What does fn1( x) return ?
+- .then( x => 'someValue' )
+- .then( x => Promise.resolve( 'someValue' ) )
+- .then( x => { return 'someValue'; } )
+- .then( x => { return Promise.resolve( 'someValue' ) } )
+- the above are all equivalent
+- a promise is always returned where the value for the next then is set to 'someValue'
+- in all the above cases the state of the promise is "settled resolved"
 
 ```javascript
-let data = {}
-let exitLoop = false;  
-p1 = fetch('https://jsonplaceholder.typicode.com/posts'); // returns a promise immediately
-p2 = p1.then(x => {
-    exitLoop = true;
-    return x.json()
-  });
-p2.then(x => { data=x});
-while (true) {
-  console.log(p1);
-  console.log(p2);
-  console.log('');
-  if (exitLoop) {
-    break;
-  }
+promiseA = new Promise( function myExecutorFunction(resolve, reject, success=true) {
+  success ? resolve('valueWeWantToSendToThen') : reject('valueWeWantToSendToCatch')  
+})
+
+promiseA
+  .then(  x   => 'then1: ' + x )
+  .then(  x   => Promise.resolve('then2: ' + x) )
+  .then(  x)  => { return 'then3: ' + x; }  )
+  .then(  x   => { return Promise.resolve( 'then4: ' + x); }  )
+```
+
+What if we want fn1(x) to return a "settled rejected" status ?
+- .then( x => Promise.reject( 'someError ') )
+- .then( x => { return Promise.reject( 'someError' ) } )
+- we need to explicitly show the promise is rejected by using Promise.reject
+
+```javascript
+promiseA = new Promise( function myExecutorFunction(resolve, reject, success=true) {
+  success ? resolve('valueWeWantToSendToThen') : reject('valueWeWantToSendToCatch')  
+})
+
+promiseA
+  .then(  x   =>  Promise.reject( 'someError ') )
+  .then( x => { return Promise.reject( 'someError' ) } )
+  .catch( x => console.log(x) )
+```
+
+Below is an example of asynchronous calls to a server. *fetch* returns a promise with a value set to a Response object. *rsp.ok* is a boolean propety on the Response object.
+
+We use the ternary operator and return *rsp.json()* or Promise.reject(....).
+
+```javascript
+function seq() {
+  let obj = {}  // object to populate
+  fetch('https://jsonplaceholder.typicode.com/posts')
+    .then( x => x.ok ? x.json() : Promise.reject('error: posts') )
+    .then( x => { obj.posts = x;  return fetch('https://jsonplaceholder.typicode.com/comments');} )
+    .then( x => x.ok ? x.json() :  Promise.reject('error: comments'))
+    .then( x => { obj.comments = x; return obj} )
+    .then( x => { window.obj = obj; })  
+    .catch( err => console.log(err) )
+}
+seq()
+obj   // Object {posts: Array[100], comments: Array[500]}
+```
+
+We can also execute multiple asychronous calls and wait for them all to complete.
+
+```javascript
+Promise.all([fetch('https://jsonplaceholder.typicode.com/posts'), fetch('https://jsonplaceholder.typicode.com/comments')])
+  .then( x => x[0].ok && x[1].ok ? Promise.all([x[0].json(), x[1].json()]) : Promise.reject('error') )
+  .then( x => { return {posts: x[0], comments: x[1]}; })
+  .then( x => { window.result = x;})
+  .catch( err => console.log(err) ); 
+
+
+
+
+
+
 ```
