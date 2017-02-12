@@ -961,16 +961,100 @@ obj   // Object {posts: Array[100], comments: Array[500]}
 
 We can also execute multiple asychronous calls and wait for them all to complete.
 
+Remember *rsp.json()* returns a Promise. That is why we use the *Promise.all([x[0].json(), x[1].json()])* construct.
+
 ```javascript
 Promise.all([fetch('https://jsonplaceholder.typicode.com/posts'), fetch('https://jsonplaceholder.typicode.com/comments')])
   .then( x => x[0].ok && x[1].ok ? Promise.all([x[0].json(), x[1].json()]) : Promise.reject('error') )
   .then( x => { return {posts: x[0], comments: x[1]}; })
   .then( x => { window.result = x;})
-  .catch( err => console.log(err) ); 
+  .catch( err => console.log(err) );
+  result  // Object {posts: Array[100], comments: Array[500]}
+```
 
+#### Asynch Iteration Pattern Using A Generator Function And Promises
 
+A Generator Function allows:
+- a consumer to *pull* values
+- a consumer to *push* values in
 
+We pull values out of the generator using the *yield 'ayz'* and *gen.next()* statements.
 
+We push values into a generator by using an argument *gen.next('valueForX')*.
 
+It is also crucial to understand that yield is  non-blocking.
+```javascript
+function* myGen() {
+   let x = yield 12;
+   let y = yield x + 20;
+}
+gen = myGen();
+gen.next(); // pull 12, can NEVER PUSH A VALUE IN ON FIRST next()
+gen.next(20); // 20 pushed to 'x', pull 40
+```
 
+See code below.
+In getPosts() generator:
+- place the sequence of actions required in this function
+- we pull promises and push values.
+- the pushed values are settled promise values.
+
+In run(generator):
+- we instantiate the generator function getPosts
+- we setup value, done which correspond to the itterator tuple {value: ..., done:...}
+
+In nextPull(previousPromiseValue):
+- we pull a value from the generator and push the previously resolved promise
+-  if the generator is not done, we resolve the promise
+- and call nextPull recursivelly
+- if generator is done we are finished !!!!
+
+```javscript
+function* getPostsAndComments() {
+// place the sequence of actions here
+// this function contains an observer (push) and iterator (pull)
+// we pull promises and push values (resolved promises)
+// describe the sequence of asynchronous operations that are required
+   let returnObj = {};
+   let postsRsp = yield fetch('https://jsonplaceholder.typicode.com/posts');  // pull promise and push value
+   returnObj.jsonPosts = yield postsRsp.json() // pull promise and push value
+   let commentsRsp = yield fetch('https://jsonplaceholder.typicode.com/comments');  // pull promise and push value
+   returnObj.jsonComments = yield commentsRsp.json() // pull promise and push value
+   return returnObj; // finally return a vanila object
+}
+
+function run(generator) {
+   let gen = generator();  // initialise the generator
+   let value, done, previousPromiseValue; // initialise
+
+   function resolveOk(promiseValue) {
+      // functions accepts a promiseValue and then based on the object type decides whether the settled promise has resolved correctly
+       if (promiseValue instanceof Response) {
+         return promiseValue.ok;
+      }
+      return true;
+   }
+
+   return new Promise( (resolve, reject) => {
+      function nextPull(previousPromiseValue) {                      // nextPull() function is called recursivelly
+         ( {value, done} = gen.next(previousPromiseValue) );   // pull the promise from 'gen' and push the value of the previous promise
+         if (!done) {   // is the generator finished
+            value // contains a promise
+                 // once promise is settled, check if resolved then call nextPull()
+                 // if error, emit error
+               .then( promiseValue => resolveOk(promiseValue) ? nextPull( promiseValue ) :  
+               reject( new Error( {error:true, promiseValue: promiseValue} )  )  )
+            }
+         else {   // the generator is finished
+            resolve(value);   // emit resolved value
+         }   
+      }
+      nextPull(); // we have to start the process
+   });
+}
+
+// now we have a very elegant way of encapsulating asynch behaviour in a simple concise manner
+run(getPostsAndComments)
+   .then(value => console.log(value) )    // do whatever we need to do with the final data
+   .catch( err => console.log(err) );     
 ```
