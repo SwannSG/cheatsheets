@@ -1058,3 +1058,39 @@ run(getPostsAndComments)
    .then(value => console.log(value) )    // do whatever we need to do with the final data
    .catch( err => console.log(err) );     
 ```
+
+## Proxies and the Reflection API
+
+- target
+- proxy
+- trap
+
+```javascript
+let target = {};
+let proxy = new Proxy(target, {});
+// proxy <---> target
+```
+trap
+- trapTarget, proxy’s target
+- key
+- value
+- receiver, proxy
+
+```javascript
+target = {name: "target"};
+
+proxy = new Proxy(target, { set( trapTarget, key, value, receiver) {
+   if (!trapTarget.hasOwnProperty(key)) {
+      if (isNaN(value)) {
+         throw new TypeError("Property must be a number.");
+      }
+   }
+   return Reflect.set(trapTarget, key, value, receiver);
+}
+});
+
+proxy.name = "proxy";
+console.log(proxy.name);   // "proxy"
+console.log(target.name);  // "proxy"
+
+```
