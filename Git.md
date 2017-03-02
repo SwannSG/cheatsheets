@@ -1,6 +1,7 @@
 ## GIT and Github
 
 git show ?????
+git commit -am 'Added stuff to monkey.txt in branchA'
 
 
 ### Data Structure
@@ -150,6 +151,12 @@ git log --author="Joe Bloggs"
 git log --grep="part of commit message"
 git log --name-only -- test5.txt
 git log --name-only SHA1 -n 1 // get commit details for just one specific SHA1
+git log --oneline    // very usefull summarised information
+git log --stat --summary
+git log --format=oneline | short | raw
+git log --graph
+git log --oneline --graph --all --decorate
+git log [branch] --oneline
 ```
 
 #### View difference between Working Directory and snapshot
@@ -310,6 +317,8 @@ v
 snapshot(2)	<------HEAD
 v
 snapshot(1)
+
+git log --name-only > ../log.txt    // copy git log to parent of Working Directory
 ```
 
 The *--soft* option does not change the contents of the Working Directory and Staging Area. But we now point at the snapshot(SHA).
@@ -329,4 +338,283 @@ The *--hard* option writes over the Working Directory, Staging Area and the Repo
 ```javascript
 // most dangerous option
 git reset --hard SHA
+```
+
+#### Viewing the orphaned snapshots after a reset
+
+To view all the snapshots, including the orphaned snapshots, use the *git reflog* command.
+
+#### Deleting untracked files from the Working Directory
+
+Untracked files, that is files that have never been added to the Staging Area, can be deleted from the Working Directory.
+
+First check what files will be permanently deleted.
+```javascript
+git clean -n   // trial run, nothing is deleted, but shows what will be deleted
+```
+Then delete the files.
+```javascript
+git clean -f   // force deletion of untracked files
+```
+
+#### Tree-ish Object
+
+Tree-ish is a git concept. It represents a sequence of commits. We can select a specific snapshot by:
+- SHA, short SHA
+- HEAD
+- branch reference
+- tag reference
+- ancestry
+
+The *git ls-tree* shows the exact makeup of a snapshot. It list blobs and trees.
+
+```javascript
+git ls-tree HEAD
+git ls-tree master
+git ls-tree HEAD newDir/
+git ls-tree <tree ref>
+```
+
+#### Ancestry
+
+Allows the selection of a specific snapshot.
+
+```javascript
+HEAD^
+HEAD^1
+HEAD~
+HEAD~1   // back 1 snapshot
+HEAD~2   // back 2 snapshots
+```
+### How to look at a single snapshot in details
+
+The *git show* command allows us to view a commit in detail.
+
+```javascript
+git show SHA
+git show <options> SHA
+```
+
+#### Compare WorkingDirectory(snapshot(1)) with WorkingDirectory(snapshot(2))
+
+*git diff* can be used for this.
+
+```javascript
+git diff SHA                  // show differences between snapshot(last) and snapshot(SHA)
+git diff SHA..HEAD   // equivalent to git diff SHA
+git diff SHA1..SHA2    // show differences between snapshot(SHA1) and snapshot(SHA2)
+git diff SHA1..SHA2 file // show differences between snapshot(SHA1) and snapshot(SHA2) for "file"
+git diff --stat --summary SHA..HEAD
+git diff --ignore-space-change SHA..HEAD
+git diff --ignore-all-space SHA..HEAD  
+```
+### Branching
+
+When we move to a newly created branch, HEAD points to master.snapshot(latest).
+
+```javascript
+master----------------new
+branch----------------branch
+snap(latest=1) <----HEAD
+snap(2)
+snap(3)
+```
+
+On the first commit in the new branch HEAD now points to newBranch.snapshot(latest).
+
+```javascript
+master----------------new
+branch----------------branch
+snap(latest=1)<-----snap(latest=1)<----HEAD
+snap(2)
+snap(3)
+```
+
+On a new commit in the *master* branch, HEAD now points to master.snapshot(latest).
+
+```javascript
+master----------------new
+branch----------------branch
+snap(latest=1) <--HEAD
+snap(2) <-------------snap(latest=1)
+snap(3)
+snap(4)
+```
+
+#### Create a new branch
+
+When we create a new branch it is created off the current branch. We do not automatically move to the newly created branch.
+```javascript
+// current branch = bugfix
+git branch newBranch       // "newBranch" branch is created off "bugfix" branch
+```
+
+#### List all branches
+
+To list all branches associated with a respository.
+```javascript
+git branch           //list branches, branch marked with "*" is live
+```
+
+#### Move to a branch
+
+When we move to a different branch, the Working Directory is completely refreshed. It now reflects the state of the Working Directory when the last commit was made in the new branch. The files for the branch we moved from is not lost. We can simply move back to it.
+```javascript
+git checkout branch           // move to a branch
+
+git checkout -b branch     // move to branch if exists, else create branch and move to it
+```
+
+If we try to move to a branch and we have unsaved changes, git will prevent the move. To get the current branch into a state where a move is allowed, we can:
+- scrap the changes
+- commit the changes
+- *stash* the changes
+
+#### Comparing branches
+
+```javascript
+// not the dot dot (..) is called the range operator
+git diff master..new_branch   // compare "master" and "new_branch"
+```
+
+To show all branches that are completely included in current branch. If the branch is included, then there is no need to merge.
+
+```javascript
+git branch --merged     // shows branches that are completely included in current branch
+```
+
+#### Changing a branch name
+
+```javascript
+// change the name of a branch
+// from "branch_name" to "branch_new_name"
+git branch --move branch_name branch_new_name
+```
+
+#### Deleting a branch
+
+We can delete an existing branch as follows.
+
+```javascript
+git branch --delete branch_name
+```
+
+### Merging
+
+Merging allows one branch to be mixed into another branch.
+
+We need to be on the receiving branch.
+
+```javascript
+// make sure we are on the receiving branch
+git merge other_branch
+```
+
+### Fast forward merge
+
+master----------------new
+branch----------------branch
+snap(latest=1)<-----snap(latest=1)<----HEAD
+snap(2)
+snap(3)
+```
+When we merge the above, branch.snapshot(latest=1) has had no new snapshots, we can simply connect newBranch.snap(latest=1) directly to branch.snapshot(latest=1)
+
+```javascript
+master--------------------------------------------------new
+branch--------------------------------------------------branch
+snap(new_branch, latest=1)<----HEAD
+snap(2, previously branch.snapshot(latest=1))<--snap(latest=1)
+snap(3)
+snap(4)
+```
+
+A simple connect to the receiving branch is called a fast-foward, and is the easiest and least complicated merge.
+
+To disallow a fast-foward merge (when one could have been performed) and force a new commit on the receiving branch, we use the *git merge --no-ff* command.
+
+If we want to only allow a merge to take place, if it is a simple merge which can be fast-forwarded, we use the *git merge --ff-only* command.
+
+#### True Merge
+
+A fast-foward merge is not considered to be a true merge. We simply connect the source branch commit onto the head of the receiving branch.
+
+A true merge occurs when the newly created branch, and the original branch, both have new commits on their respective branches.
+
+First we move to the receiving branch
+```javascript
+git merge branch_from
+```
+The merge may proceed smoothly or we may get a conflict.
+
+#### Merge conflict
+
+A merge conflict occurs when the same file has been edited on the same line(s) in more than one branch.
+
+To  resolve we have three options
+-- *git merge --abort*
+-- resolve manually
+-- resolve with a merge tool
+
+To resolve manually we need to:
+- open the conflicted file
+- manually edited
+- save the file
+- add and commit to the repository
+
+#### Viewing merges in branches
+
+[Ways to display branches and merges](https://gist.github.com/datagrok/4221767)
+
+```javascript
+git log --graph --topo-order --decorate --oneline --all
+git log --graph --topo-order --decorate --oneline --boundary master..dev
+git log --graph --topo-order --decorate --oneline --boundary master..dev
+git log --graph --all --topo-order --decorate --oneline --boundary --force-branch-columns=master,dev
+git log --graph --all --topo-order --decorate --oneline --boundary
+git log --graph --all --topo-order --decorate --oneline --boundary --force-branch-columns=master,dev
+```
+
+#### Check if a branch is fully merged into current branch
+git branch --mergegit branch --merge
+*git branch --merge* shows which branches are fully merged onto current branch. The branch we are on is displayed by an asterick. Any other branches that are listed, without and asterisk, are fully merged into current branch.
+
+```javascript
+git branch --merge
+// result
+branchX        // branchX is fully merged into master
+*master
+```
+### Stashing changes
+
+The *stash* is a fourth, global area in git.
+
+We can temporarily save any changes in the Working Directory, when we don't yet want to do a full commit.
+
+The stash is **globally available to all branches**.
+
+```javascript
+git stash save "some message"
+```
+
+Once we have stashed the changes we can move to another branch.
+
+To list the stashes, we use *git stash list* command.
+
+```javascript
+git stash list
+// stash@{0}: On [branch]: some message
+```
+
+To show more details about a stash we use the command *git stash show*.
+
+```javascript
+git stash show stash@{0}
+git stash show -p stash@{0}      // show stash as a patch
+```
+
+To retrieve the stash we use the command *git stash
+
+```javascript
+
 ```
