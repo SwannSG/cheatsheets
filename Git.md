@@ -788,3 +788,58 @@ The remote cannot accept a push if it has new commits.
 These new commits may have been added by other developers.
 
 We first need to fetch the changes on the remote. Then merge these changes, and try to push to the remote again.
+
+#### Deleting a Remote
+
+This a destructive delete !
+
+The entire branch on the Remote is deleted.
+
+```javascript
+// git push <alias> --delete <branch>
+git push server --delete branchC
+```
+
+#### Adding a new feature to master branch workflow
+
+We are going to add a new feature. The end product will be merged into the *master* branch. But we will make the actual changes in a separate branch, and then bring them back into the master.
+
+The steps Joe take are:
+- *git checkout master* (move to the local master branch)
+- *git fetch origin/master* (get the latest version from the Remote)
+- *git merge origin/master* (merge these changes into master branch)
+-*git checkout -b new_feature* (create and move to branch "new_feature")
+- make all the necessary changes in the Working Directory
+- *git commit -am 'new_feature added'*
+- *git fetch origin/master* (check for any changes on the Remote) . Assume there were no changes.
+- *git push -u origin new_feature* (push the new_feature branch onto the Remote. This will create the "new_feature" branch on the Remote, for James to review)
+- send email to James asking him to review
+
+The steps James takes:
+- *git checkout master* (move to her local master branch)
+- *git fetch origin/master*   
+- *git merge origin/master*
+- *git checkout -b new_feature origin/new_feature (create "new_feature" branch from "origin/new_feature" and move to it )
+- *git log* (to see the commits)
+- *git show [commit]* (have a look at the commit in detail)
+- *git commit -am 'James wants to make some changes'
+- *git fetch*
+- *git push*
+- James sends an email to say he has made some additions
+
+Back to Joe:
+- *git fetch*
+- *git log -p new_feature ..origin/new_feature* (-p is the patch option, and will show the diff between "new_feature" and "origin/new_feature")
+- *git merge origin/new_feature* (merge changes into "new_feature" branch)
+- *git checkout master* (switch back to "master" branch to receive the changes from "new_feature")
+- *git fetch* (get latest remote version)
+- *git merge origin/merge* (merge changes in from "origin/merge")
+- *git merge new_feature* (merge changes in from "new_feature")
+- *git push*
+
+### Keyboard shortcuts using aliases
+
+Set these up in the global configuration file.
+
+```javascript
+git config --global alias.st "status"  // st will execute 'git status'
