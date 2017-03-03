@@ -608,13 +608,183 @@ git stash list
 
 To show more details about a stash we use the command *git stash show*.
 
+*stash@{n}* is a reference to any individual stash.
+
+
 ```javascript
 git stash show stash@{0}
 git stash show -p stash@{0}      // show stash as a patch
 ```
 
-To retrieve the stash we use the command *git stash
+To retrieve the stash we use the command *git stash pop|apply*
+
+Pop removes the item from the stash.
+
+Apply keeps the item in the stash.
 
 ```javascript
-
+git stash pop stash@{0}
+// or
+git stash apply stash@{3}
 ```
+
+To delete a stash item we used the *git stash drop* command.
+
+```javascript
+git stash drop stash@{0}
+// or
+git stash clear   // clears all items in the stash
+```
+
+### Remotes
+
+We have a local machine with local git.
+
+We now introduce a Remote machine with remote git.
+
+In local git we define a name (alias) and resource location (url) for a remote repository. We use *git remote add [alias] [url]* command.
+
+By convention alias is often set as "origin".
+
+We can set the default branch for "origin" on the Remote.
+
+```javascript
+// local machine #1
+git branch
+*master
+// end local machine
+
+// introduce a remote
+git remote add origin <url>
+// fetch from remote where alias ="origin", remote branch = "master"
+git fetch origin master    
+// end introduce a remote
+
+// after remote branch fetched
+git branch
+*master
+origin/master     // notice new local repo "origin/master", snapshot taken on "git fetch"
+// end after remote branch fetched
+```
+
+#### Movement of data
+
+A *git fetch* downloads data from the specified remote, and updates [alias]/[branch] repo on the local machine. In the example above the repo is *origin/master*.
+
+
+#### Typical Workflow
+
+In practice the workflow is typically as follows:
+- we make changes on *local.master*. *local.master.HEAD* has moved on from *local.origin/master*.
+- we fetch most recent *remote.master* branch, which also may have moved on with additional commits.
+- we merge *remote.master* into *local.master*
+- push *local.master* to *remote.master*.
+
+#### What Remotes does local git know about ?
+
+```javascript
+// list all remotes local git is aware of
+git remote -v
+// alias url (push)
+// alias url (fetch)
+```
+
+#### Inform local git of a Remote
+
+We inform local git of a Remote using the *git remote* command.
+
+*alias* is a local short name for the Remote, and is an easy reference to the *resource location*
+
+.config file is updated.
+
+```javascript
+git remote add <alias> <url>
+// <url> describes where the resource is located
+```
+To remove a a remote that has been added for local.git, use *git remote rm*.
+
+```javascript
+gir remote rm <alias>
+```
+
+#### Push local branch to remote branch
+
+To update the remote.branch we use the *git push -u* command.
+
+```javascript
+git push -u <alias for remote> <local branch>
+// -u flag makes the branch tracking
+```
+
+The advantages of making a branch tracking are:
+- can just use *git fetch* and *git push* with no additional parameters
+- git informs you of unpushed and unpulled commits
+
+#### Initialing a git environment and downloading an entire repository
+
+We can use the *git clone* command.
+
+Downloads the default branch for the remote repository.
+
+This is configurable in Github.
+
+```javascript
+git clone <url> <local folder>
+```
+
+#### Downloading another remote branch (not default)
+
+Use the *git fetch* command.
+
+```javascript
+git fetch <remote alias> <branch on remote>
+
+git fetch      // <remote alias>, <branch on remote> are implied
+```
+
+**A *fetch* does not *merge* into the local branch.**
+
+**After a *fetch* it is necessary to *merge*.**
+
+#### Making a non-tracking branch a tracking branch
+
+```javascript
+git branch --set-upstream <local branch>  <remote alias>/<remote branch>
+```
+
+A tracking branch allows just *git push* to be used.
+
+Otherwise we need *git push <remote alias> <local branch>*.
+
+#### Comparing local and remote branches
+
+```javascript
+git diff <remote alias>/<remote branch>..<local branch>
+```
+
+#### Reference to a remote branch
+
+We can reference a remote branch and use it as if it were a local branch.
+
+The reference is <remote alias>/<remote branch/>
+
+```javascript
+git log --oneline server/master
+```
+
+#### Using fetch often
+
+*git fetch* is never destructive to the local Working Directory. With that in mind here are some basic "rules":
+- fetch before you start any work
+- fetch before you push
+- fetch often
+
+After a *git fetch* do a *git merge*.
+
+#### Remote has had multiple commits since your last fetch
+
+The remote cannot accept a push if it has new commits.
+
+These new commits may have been added by other developers.
+
+We first need to fetch the changes on the remote. Then merge these changes, and try to push to the remote again.
