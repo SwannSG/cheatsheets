@@ -88,7 +88,7 @@ It is a very good idea to setup the "gitignore stuff" at the start of a project,
 ```javascript
 //  file WorkingDirectory/.gitignore
 *.wp					// ignore all files ending in ".wp"
-.newDir			// ignore sub-directory newDir
+newDir			// ignore sub-directory newDir
 // end file
 ```
 There are many configuration patterns to identify exactly what needs to be ignored. Look them up when required.
@@ -278,7 +278,7 @@ git commit -m 'restored file'
 #### Removing file from the Staging area
 
 ```javascript
-git reset HEAD file  // removes file from the Staging Area
+git reset HEAD -- file  // removes file from the Staging Area
 ```
 This is often used to package up a set of changes that can be commited under a sensible commit message.
 
