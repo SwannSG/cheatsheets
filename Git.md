@@ -1,7 +1,5 @@
 ## GIT and Github
 
-another change
-
 ### Data Structure
 
 As a programmer we have a *Working directory*, which contains our files and sub-directories that contain programs, libraries and other assets. That is where we work.
