@@ -1,11 +1,5 @@
 ## GIT and Github
 
-git show ?????
-git commit -am 'Added stuff to monkey.txt in branchA'
-ssh config cat ~/.ssh/id_rsa.pub
-
-
-
 ### Data Structure
 
 As a programmer we have a *Working directory*, which contains our files and sub-directories that contain programs, libraries and other assets. That is where we work.
@@ -123,6 +117,9 @@ commit title of one line
 // must have an empty line
 some additional text to describe the commit more fully ...
 // then uncomment the files (delete the "#") to commit to the snapshot
+
+// the -am flag stages and commits in one step
+git commit -am 'Adds to staging area and makes the commit in one step'
 ```
 
 #### View status of Working Directory
@@ -801,6 +798,17 @@ The entire branch on the Remote is deleted.
 // git push <alias> --delete <branch>
 git push server --delete branchC
 ```
+
+#### Configuring a Remote with SSH
+
+Using SSH for push and fetch from the Remote is very helpful, because we don't need to enter a password each time.
+
+Steps to achieve this are:
+- configure SSH keys on local machine (if you don't have them already)
+- grab the public key using *cat ~/.ssh/id_rsa.pub*
+- paster the public key into the Remote service (github, bitbucket, gitlab)
+- test with a *fetch* or *push*
+
 
 #### Adding a new feature to master branch workflow
 
