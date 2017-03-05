@@ -2,6 +2,8 @@
 
 git show ?????
 git commit -am 'Added stuff to monkey.txt in branchA'
+ssh config cat ~/.ssh/id_rsa.pub
+
 
 
 ### Data Structure
