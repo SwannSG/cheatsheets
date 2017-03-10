@@ -994,7 +994,7 @@ gen.next(20); // 20 pushed to 'x', pull 40
 ```
 
 See code below.
-In getPosts() generator:
+In getPostsAndComments() generator:
 - place the sequence of actions required in this function
 - we pull promises and push values.
 - the pushed values are settled promise values.
