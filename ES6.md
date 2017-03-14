@@ -1094,3 +1094,17 @@ console.log(proxy.name);   // "proxy"
 console.log(target.name);  // "proxy"
 
 ```
+
+### Named arguments
+
+JS does not support named parameters, like for example Python.
+
+We simulate it as follows.
+
+```javascript
+function abc({coll='', query='', proj='', docs='', options=''} = {}) {
+  console.log(coll, query, proj, docs, options);
+}
+
+abc({coll: 'People', options:true}) 
+```

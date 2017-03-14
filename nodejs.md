@@ -69,7 +69,7 @@ app/
 #### Namespace using *require* and *module.export*
 
 The basic rules for the string in require(*string*) to access a module are:
-    - don't include filename extenstion ".js" in the string. test.js becomes "test"  
+    - don't include filename extention ".js" in the string. test.js becomes "test"  
     - any module in *node_modules* is referenced directly. /mongodb is referenced as "mongodb"
     - "./" and "../" starting point is where the source js file is located in the directory tree
     - "./" moves downwards
@@ -136,6 +136,18 @@ module.exports = {
     someObj: someObj,
     someFn: someFn
 }
+```
+### Node Debugging
+
+To run script, and then get control back to the node shell, do as follows:
+
+```javascript
+// enter node shell, REPL Read-Eval-Print-Loop 
+node
+// from inside node shell
+.load ./script.js
+
+// script will execute and shell is available
 ```
 
 ### MongoDB
@@ -240,6 +252,186 @@ All of this is done asynchronously
 We have implemented two techniques for database access.
 - standard promises approach
 - combination of generators and promises
+
+### Node and Mongoose
+
+Mongoose makes working with mongo db easier. MongoDB interacts with *documents* inside *collections*. Mongoose encapsulates this in a *Schema*. The schema relates directly to the database. However, our user application does not interact directly with the Schema. It interfaces with a *Model*. And the Model is generated from the Schema.
+
+mongoDB ---> Schema ---> Model ---> user application
+
+#### Connecting to mongo db
+
+First we need to connect to the database. If *conn* is not yet "ready", mongoose inteligently queues database activities.
+
+```javascript
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
+
+let conn = null;            // connection object ~ db
+mongoose.Promise = Promise; // use standard ES6 promises
+
+mongoose.connect(uri.uri)   // ask for the connection
+    .then( ok => conn = mongoose.connection)
+    .catch( err => console.log('err', err))
+```
+
+#### Create a Schema
+
+The schema definition consists of properties (also called keys in mongoose speak) which map to the databse.
+
+Below we have *keys user, password, email*.
+
+We can also put constraints on the values associated with keys. These constraints are pulled through into the model automatically.
+
+By convention schema names start with lowercase, and model names with uppercase.
+
+```javascript
+// let userSchema = new Schema({schema definition}, {schema options})
+let usersSchema = new Schema(
+    {user: {type:String, index:true, unique:true, trim:true, required:true},
+    password: {type:String, default:'1234567'},
+    email: {type:String, required:true, match: /.+\@.+\..+/, index:true}},
+    {collection:'users'}
+);
+```
+
+Above defines *usersSchema* document "blueprint", with properties 'user', 'password', and 'email'. Schema options specifies collection name as "users".
+
+
+#### Create a Model from the Schema
+
+We create a model using the *mongoose.model(modelName, schema)* constructor. 
+
+```javascript
+// model User with name = 'user'
+let User = mongoose.model('User', usersSchema)
+```
+
+#### Construct *document instance* from the model
+
+A *document instance* is an object that can be saved or retrieved from the database. It is created from a model, and passed key/value pairs representing collection fields.
+
+```javascript
+// create document instance
+// new someModel({document fields})
+let document_instance = new User(
+    {user:'Alex',password:'passwd', email:'Alex@tutorialtous.com'}
+);
+```
+
+#### Save *document instance*
+
+We persist a document by using the *save()* method.
+
+When we save() the document is validated. 
+
+```javascript
+document_instance.save()
+    .then(result => console.log('save'))
+    .catch(err => console.log('save ERROR', err));
+```
+
+#### Updating a document
+
+The document is persisted to MongoDB, and we need to change the document.
+
+Option 1 (two db trans, doc instance)
+
+- retrieve document instance by _id,
+- change document instance,
+- save document instance.
+- inefficient because of two db operations.
+- validation on save takes place
+
+```javascript
+// Option 1
+User.findById('58c6bd497faa994850db4cbd').exec()
+    // result is a document instance
+    .then(result => {result.user = 'Pamela'; result.save();})
+    .catch(err => console.log('ERROR', err));
+```
+
+Option 2 (single db trans, no doc instance)
+
+- find and update document in one query/ update
+- single db operation
+- does NOT return document instance
+- NO VALIDATION takes place
+
+```javascript
+// Option 2
+User.update({_id: '58c6bd497faa994850db4cbd'}, { $set: { user: 'Peter' }}).exec()
+    // result is NOT a document instance
+    .then(result => console.log(result))
+    .catch(err => console.log('ERROR', err));
+```
+
+Option 2a:
+
+- as per option 2
+- allows for validation with some caveats
+- validation occurs on $set, $unset, $push, $addToSet
+- validation does NOT occur on $inc
+
+```javascript
+// Option 2a
+User.update({_id: '58c6bd497faa994850db4cbd'}, 
+            {$set: { user: 'Peter' }},
+            {runValidators: true, context: 'query'}).exec()
+    .then(result => console.log(result))
+    .catch(err => console.log('ERROR', err));
+```
+
+Option 3 (single db trans, doc instance) 
+- find and update document in one query/ update
+- single db operation
+- does return document instance
+- NO VALIDATION takes place
+
+```javascript
+// Option 3
+User..findByIdAndUpdate({_id: '58c6bd497faa994850db4cbd'}, { $set: { user: 'Peter' }}).exec()
+    // result is a document instance
+    .then(result => console.log(result))
+    .catch(err => console.log('ERROR', err));
+```
+
+Option 3a (single db trans, doc instance) 
+- as per Option 3
+- allows for validation as per option 2b
+
+```javascript
+// Option 3a
+User.findByIdAndUpdate({_id: "58c6bd497faa994850db4cbd"},
+                       { $set: { user: 'Herbert' }},
+                       {runValidators: true, context: 'query'}).exec()
+    .then(result => console.log(result))
+    .catch(err => console.log('ERROR', err))
+```
+
+#### Finding a document(s)
+
+Doing something with the document like remove or update, is really secondary to the find.
+
+To find one or more documents. Returns an array of document instances. 
+- find
+- where
+- findById
+- findByIdAndRemove
+- findByIdAndUpdate
+
+To find a single document
+- findOne
+- findOneAndRemove
+- findOneAndUpdate
+
+
+
+
+
+
+
+
 
 ### Error Handling
 
