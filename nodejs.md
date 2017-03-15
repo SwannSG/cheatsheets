@@ -411,19 +411,79 @@ User.findByIdAndUpdate({_id: "58c6bd497faa994850db4cbd"},
 
 #### Finding a document(s)
 
-Doing something with the document like remove or update, is really secondary to the find.
+A find is done on the Model.
 
-To find one or more documents. Returns an array of document instances. 
+Doing something with the document like remove or update, is really secondary to the find. First we need to find the document(s).
+
+The _id in the result of a find is a string. Different to native Mongo where it is an ObjectId.
+
+The *{querySelection}* object is a standard [MongoDB query](https://docs.mongodb.com/manual/tutorial/query-documents/). 
+
+Adding the *.exec()* after the find is to force promises.
+
+*Model.find({querySelection})* returns a *Query object*.
+
+To find one or more documents. Returns an array of *document instances*. 
 - find
 - where
 - findById
 - findByIdAndRemove
 - findByIdAndUpdate
 
-To find a single document
+```javascript
+let query = User.find({querySelection}) // query object
+
+query.exec()
+    .then(result => console.log(result))
+    catch(err => console.log('ERROR', err))
+```
+
+To find a single document, and return a document instance (not an array of document instances)
 - findOne
 - findOneAndRemove
 - findOneAndUpdate
+
+It is possible to chain a *query object*. The result is an array of document instances. If we suppress the _id it is not possible to save the document.
+
+```javascript
+let query = User.find({selection})
+query
+    .limit(10)      // <= 10 documents
+    .sort({ user: -1 }) // sort array in reverse user order
+    .select({ email: 1, user: 1, _id:0 })   // properties: 1 are returned
+    .exec()
+    .then(result => {result.user=result.save(); console.log(result);})
+    .catch(err => console.log('ERROR', err))
+```    
+
+#### Process query result using streams
+
+Where a query returns a large array of document instances, it is more efficient to process the documents using a node *streams* interface. We use a *cursor* object.
+
+See [Cursor Streams] (http://thecodebarbarian.com/cursors-in-mongoose-45)
+
+The *cursor* object has an extremelu useful method *eachAsync* to stream each document. 
+
+```javascript
+let query = User.find({selection})  // query object
+let cursor = query.cursor()         // cursor object
+cursor.eachAsync((doc) => {
+        // do something to each document instance
+        console.log(doc)
+    })
+    .then(() => console.log('done'))
+    .catch(err => console.log(err)) // not sure if 'catch' works 
+```
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -69,16 +69,27 @@ Object.getPrototypeOf(baseObject)   // null
 
 #### Delegation
 
+
+
+
 ```javascript
 let base = Object.create(null);
 base.fullname = function() {return this.firstname + ' ' + this.surname;}
+base.whatisthis = function () {console.log(this)}
 
 let derived_1 = Object.create(base);
 derived_1.join = function() {return this.firstname + '#' + this.surname + '#' + this.age;}
+derived_1.whatisthat = function () {console.log(this)}
+
 
 let derived_1_1 = Object.create(derived_1,
     {firstname:{value:'Steve'}, surname:{value:'Swann'}, age:{value:58}});
 );
+// alternativel we can define derived_1_1 in this way
+let derived_1_1 = Object.create(derived_1)
+derived_1_1.firstname = 'Steve';
+derived_1_1.lastname = 'Swann';
+derived_1_1.age = 58;
 ```
 
 
