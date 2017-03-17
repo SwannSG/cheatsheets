@@ -150,6 +150,15 @@ node
 // script will execute and shell is available
 ```
 
+To clear the node shell.
+
+```javascript
+console.log('\033[2J');
+```
+
+
+
+
 ### MongoDB
 
 - *node_modues/mongodb*: The MongoDB driver for Node.js
@@ -253,247 +262,8 @@ We have implemented two techniques for database access.
 - standard promises approach
 - combination of generators and promises
 
-### Node and Mongoose
 
-Mongoose makes working with mongo db easier. MongoDB interacts with *documents* inside *collections*. Mongoose encapsulates this in a *Schema*. The schema relates directly to the database. However, our user application does not interact directly with the Schema. It interfaces with a *Model*. And the Model is generated from the Schema.
-
-mongoDB ---> Schema ---> Model ---> user application
-
-#### Connecting to mongo db
-
-First we need to connect to the database. If *conn* is not yet "ready", mongoose inteligently queues database activities.
-
-```javascript
-const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
-
-let conn = null;            // connection object ~ db
-mongoose.Promise = Promise; // use standard ES6 promises
-
-mongoose.connect(uri.uri)   // ask for the connection
-    .then( ok => conn = mongoose.connection)
-    .catch( err => console.log('err', err))
-```
-
-#### Create a Schema
-
-The schema definition consists of properties (also called keys in mongoose speak) which map to the databse.
-
-Below we have *keys user, password, email*.
-
-We can also put constraints on the values associated with keys. These constraints are pulled through into the model automatically.
-
-By convention schema names start with lowercase, and model names with uppercase.
-
-```javascript
-// let userSchema = new Schema({schema definition}, {schema options})
-let usersSchema = new Schema(
-    {user: {type:String, index:true, unique:true, trim:true, required:true},
-    password: {type:String, default:'1234567'},
-    email: {type:String, required:true, match: /.+\@.+\..+/, index:true}},
-    {collection:'users'}
-);
-```
-
-Above defines *usersSchema* document "blueprint", with properties 'user', 'password', and 'email'. Schema options specifies collection name as "users".
-
-
-#### Create a Model from the Schema
-
-We create a model using the *mongoose.model(modelName, schema)* constructor. 
-
-```javascript
-// model User with name = 'user'
-let User = mongoose.model('User', usersSchema)
-```
-
-#### Construct *document instance* from the model
-
-A *document instance* is an object that can be saved or retrieved from the database. It is created from a model, and passed key/value pairs representing collection fields.
-
-```javascript
-// create document instance
-// new someModel({document fields})
-let document_instance = new User(
-    {user:'Alex',password:'passwd', email:'Alex@tutorialtous.com'}
-);
-```
-
-#### Save *document instance*
-
-We persist a document by using the *save()* method.
-
-When we save() the document is validated. 
-
-```javascript
-document_instance.save()
-    .then(result => console.log('save'))
-    .catch(err => console.log('save ERROR', err));
-```
-
-#### Updating a document
-
-The document is persisted to MongoDB, and we need to change the document.
-
-Option 1 (two db trans, doc instance)
-
-- retrieve document instance by _id,
-- change document instance,
-- save document instance.
-- inefficient because of two db operations.
-- validation on save takes place
-
-```javascript
-// Option 1
-User.findById('58c6bd497faa994850db4cbd').exec()
-    // result is a document instance
-    .then(result => {result.user = 'Pamela'; result.save();})
-    .catch(err => console.log('ERROR', err));
-```
-
-Option 2 (single db trans, no doc instance)
-
-- find and update document in one query/ update
-- single db operation
-- does NOT return document instance
-- NO VALIDATION takes place
-
-```javascript
-// Option 2
-User.update({_id: '58c6bd497faa994850db4cbd'}, { $set: { user: 'Peter' }}).exec()
-    // result is NOT a document instance
-    .then(result => console.log(result))
-    .catch(err => console.log('ERROR', err));
-```
-
-Option 2a:
-
-- as per option 2
-- allows for validation with some caveats
-- validation occurs on $set, $unset, $push, $addToSet
-- validation does NOT occur on $inc
-
-```javascript
-// Option 2a
-User.update({_id: '58c6bd497faa994850db4cbd'}, 
-            {$set: { user: 'Peter' }},
-            {runValidators: true, context: 'query'}).exec()
-    .then(result => console.log(result))
-    .catch(err => console.log('ERROR', err));
-```
-
-Option 3 (single db trans, doc instance) 
-- find and update document in one query/ update
-- single db operation
-- does return document instance
-- NO VALIDATION takes place
-
-```javascript
-// Option 3
-User..findByIdAndUpdate({_id: '58c6bd497faa994850db4cbd'}, { $set: { user: 'Peter' }}).exec()
-    // result is a document instance
-    .then(result => console.log(result))
-    .catch(err => console.log('ERROR', err));
-```
-
-Option 3a (single db trans, doc instance) 
-- as per Option 3
-- allows for validation as per option 2b
-
-```javascript
-// Option 3a
-User.findByIdAndUpdate({_id: "58c6bd497faa994850db4cbd"},
-                       { $set: { user: 'Herbert' }},
-                       {runValidators: true, context: 'query'}).exec()
-    .then(result => console.log(result))
-    .catch(err => console.log('ERROR', err))
-```
-
-#### Finding a document(s)
-
-A find is done on the Model.
-
-Doing something with the document like remove or update, is really secondary to the find. First we need to find the document(s).
-
-The _id in the result of a find is a string. Different to native Mongo where it is an ObjectId.
-
-The *{querySelection}* object is a standard [MongoDB query](https://docs.mongodb.com/manual/tutorial/query-documents/). 
-
-Adding the *.exec()* after the find is to force promises.
-
-*Model.find({querySelection})* returns a *Query object*.
-
-To find one or more documents. Returns an array of *document instances*. 
-- find
-- where
-- findById
-- findByIdAndRemove
-- findByIdAndUpdate
-
-```javascript
-let query = User.find({querySelection}) // query object
-
-query.exec()
-    .then(result => console.log(result))
-    catch(err => console.log('ERROR', err))
-```
-
-To find a single document, and return a document instance (not an array of document instances)
-- findOne
-- findOneAndRemove
-- findOneAndUpdate
-
-It is possible to chain a *query object*. The result is an array of document instances. If we suppress the _id it is not possible to save the document.
-
-```javascript
-let query = User.find({selection})
-query
-    .limit(10)      // <= 10 documents
-    .sort({ user: -1 }) // sort array in reverse user order
-    .select({ email: 1, user: 1, _id:0 })   // properties: 1 are returned
-    .exec()
-    .then(result => {result.user=result.save(); console.log(result);})
-    .catch(err => console.log('ERROR', err))
-```    
-
-#### Process query result using streams
-
-Where a query returns a large array of document instances, it is more efficient to process the documents using a node *streams* interface. We use a *cursor* object.
-
-See [Cursor Streams] (http://thecodebarbarian.com/cursors-in-mongoose-45)
-
-The *cursor* object has an extremelu useful method *eachAsync* to stream each document. 
-
-```javascript
-let query = User.find({selection})  // query object
-let cursor = query.cursor()         // cursor object
-cursor.eachAsync((doc) => {
-        // do something to each document instance
-        console.log(doc)
-    })
-    .then(() => console.log('done'))
-    .catch(err => console.log(err)) // not sure if 'catch' works 
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-### Error Handling
+### Node Error Handling
 
 Central error handling can be dealt with as follows:
 - create an errorEmitter object
@@ -521,3 +291,8 @@ module.exports = {
 error.errorEmitter.emit('error', err)
 ```
 
+## npm
+
+*npm update*
+
+ 
