@@ -258,6 +258,8 @@ String type specific
 - trim ........boolean
 - match .......RegExp
 - enum ........[array of acceptable values]
+- minlength ...minimum number of characters allowed
+- maxlength ...maximum number of characters allowed
 
 Number type specific
 - min .........number, >=
@@ -266,6 +268,61 @@ Number type specific
 Date type specific
 - min .........Date, >=
 - max .........Date, <=
+
+```javascript
+let stuffsSchema = new mongoose.Schema(
+    {
+        my_string: {type:String,
+                    minlength: [2, 'my_string must be at least 2 characters.'],
+                    maxlength: [20, 'Username must be less than 20 characters.']}, 
+        email:     {type:String,
+                    match: [/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
+                            'invalid email']},
+        colour:    {type: String,
+                    enum: ['red', 'green', 'blue']},
+                    message: 'my enum custom message'
+        name:       {type: String, trim: true},
+        option:     {type: String,
+                    validate: [(value) => {if (value=='test') {return true;} return false;},
+                     'option error is not correct']},
+        car:       {type: String, required: [true, 'car is absolutely required']},
+        count:     {type: Number, min:5, max:10}  
+     },
+    {collection: 'stuffs'}
+);
+```
+
+Any off-the=shelf validation can be expressed as:
+- validation property name eg. match
+- value or [value, 'custom error message] 
+
+Custom error message is not available for *enum* validator property.
+
+```javascript
+// inside the schema .....
+// required: [true, 'car is absolutely required']
+// property: [boolean, 'custom message']
+car:       {type: String, required: [true, 'car is absolutely required']}
+```
+
+If we want to validate a document without event attempting to right to the database, we can use *doc_instance.validateSync()*. This returns a Validation Error Object. It only validates synchronous validators.
+
+```javascript
+// validateSynch only validate synchronous fields
+// validate all synchronous fields
+let validation_err = doc_instance.validateSync()
+
+// validate only the fields in the array
+let validation_err = doc_instance.validateSync(['field1', 'field2'])
+```
+
+
+
+
+
+### Discriminators
+
+[Discriminators](http://thecodebarbarian.com/2015/07/24/guide-to-mongoose-discriminators)
 
 
 
@@ -289,6 +346,32 @@ schema.pre(init|save|validate|remove)
 
 
 schema.post
+
+
+doc.validateSynch([array of paths])
+ignores async validation 
+
+
+
+```javascript
+// validate on multiple fields
+var a = new Schema({
+  startDate: Date,
+  endDate: Date
+});
+
+ASchema.pre('validate', function(next) {
+    if (this.startDate > this.endDate) {
+        next(Error('End Date must be greater than Start Date'));
+    } else {
+        next();
+    }
+});
+
+```
+
+
+
 
 
 ### Mongoose Error Handling
