@@ -224,7 +224,7 @@ cursor.eachAsync((doc) => {
 
 ### More on Mongoose Schemas
 
-Each key (or field) in the Schema can have additional meta information associated with it.
+Each key (or field, or path) in the Schema can have additional meta information associated with it.
 - name of the field
 - object which describes the field
 
@@ -240,7 +240,7 @@ Mongoose also has the term *path*. This is the final key that references the met
 
 General
 - type ..........String, Number, Date, Buffer, Boolean, Mixed, ObjectId, Array
-- required ......boolean
+- required ......boolean, the field must be included
 - default .......default value
 - select ........columns to return on a query
 - validate ......validateFunction(field_value), function must return boolean
@@ -269,6 +269,12 @@ Date type specific
 - min .........Date, >=
 - max .........Date, <=
 
+#### Standard Validation
+
+Keep in mind if a *path* is *required=true*, then the field must be included. Path value validation then happens.
+
+If *path* *required=false*, and we have path value validation, then completely leaving out the field pass validaation.
+
 ```javascript
 let stuffsSchema = new mongoose.Schema(
     {
@@ -286,10 +292,13 @@ let stuffsSchema = new mongoose.Schema(
                     validate: [(value) => {if (value=='test') {return true;} return false;},
                      'option error is not correct']},
         car:       {type: String, required: [true, 'car is absolutely required']},
-        count:     {type: Number, min:5, max:10}  
+        count:     {type: Number, min:5, max:10},
+        date:      {type: Date, min: new Date('2017-01-01'), max: new Date('2017-01-30')}  
      },
     {collection: 'stuffs'}
 );
+
+let StuffModel = mongoose.model('Stuff', stuffsSchema);
 ```
 
 Any off-the=shelf validation can be expressed as:
@@ -305,7 +314,30 @@ Custom error message is not available for *enum* validator property.
 car:       {type: String, required: [true, 'car is absolutely required']}
 ```
 
-If we want to validate a document without event attempting to right to the database, we can use *doc_instance.validateSync()*. This returns a Validation Error Object. It only validates synchronous validators.
+When we save a document instance validation kicks in.
+
+```javascript
+stuff = new stuffs.StuffModel(
+    {
+        my_string: 'tango',
+        email: 'abc@google.com',
+        colour: 'pink',
+        name: '  James   ',
+        option: 'test',
+        count: '1',
+        date: new Date('2017-02-25')
+    }
+)
+
+// validation occurs on doc.save()
+stuff.save(function error(err){
+    if (err) {
+        console.log('save error', err);
+    }
+})
+```
+
+If we want to validate a document without attempting to write to the database, we can use *doc_instance.validateSync()*. This returns a Validation Error Object. It only validates synchronous validators.
 
 ```javascript
 // validateSynch only validate synchronous fields
@@ -315,6 +347,33 @@ let validation_err = doc_instance.validateSync()
 // validate only the fields in the array
 let validation_err = doc_instance.validateSync(['field1', 'field2'])
 ```
+
+### Validation on update
+
+An update is not normally validated !
+
+If validation is required, we need to include some options to show that.
+
+*{runValidators: true, context: 'query'}*
+
+Update validation does not honour *required: true*.
+
+```javascript
+stuffs.StuffModel.findByIdAndUpdate("58cc11afed3a504383e6e17e",
+   {my_string: 'tango',
+    email: 'abc@google.com',
+    colour: 'pink',
+    name: '  James   ',
+    option: 'error.test',
+    count: '1',
+    date: new Date('2017-02-25')},
+    // forces update validation
+    {runValidators: true, context: 'query'}
+ ).exec()
+ .then(() => console.log('update good'))
+ .catch(err => console.log(err))
+```
+
 
 
 
