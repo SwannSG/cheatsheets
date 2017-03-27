@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Understand Vertical Align Middle</title>
+    <style>
+        .parent {
+            height: 80px;
+            font-family: monospace;
+            font-size: 5rem;
+            background-color: lightblue;
+        }
+
+        .common {
+            padding: 0;
+            margin: 0;
+            letter-spacing: -0.06em;
+        }
+       
+        .one {
+            background-color: pink;
+            font-size: 3rem;
+            vertical-align: baseline;
+        }
+        
+        .two {
+            background-color: green;
+            font-size: 2rem;
+            vertical-align: middle;
+        }
+        
+        .three {
+            background-color: brown;
+            font-size: 2rem;
+            vertical-align: baseline;
+        }
+        
+        .four {
+            background-color: orange;
+            font-size: 2rem;
+            vertical-align: baseline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="parent">
+        <span class="one common">xhg</span><span class="two common">&lt;xhg</span><span class="three common">&lt;xhg</span><span class="four common">&lt;xhg</span>&lt;xhg
+    </div>
+
+</body>
+
+</html>
