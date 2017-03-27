@@ -680,14 +680,41 @@ The problem is that negative margins do not properly interact with the content t
 
 [Negative margin example](https://jsfiddle.net/SwannSG/q63nruru/)
 
+### Overflow
+
+Overflow occurs when a child element is either positioned outside its parent element, or the child element does not fit inside the dimensions of its parent. The *overflow* property controls how the portion of the child that overflows is rendered:
+
+ - not applicable to *inline-block* elements
+ - default value is **visible**
+    - any other value causes a Block Format Context
+ - other values are **hidden, scroll, auto**
+
+### max-width, max-height, min-width and min-height
+
+Width and height can be set explicitly (not for inline-blocks).
+
+Constraints can be added.
+
+Explicit units like px or as a percentage of parent width or height.
+
+max-width, min-width
+ - explicit length
+ - percentage of containing block's width
+     - if negative width, value is zero
+     - if containing block's width depends on this element's width, resulting layout is undefined   
+ - max-width = none, no limit on box width    
+
+max-height, min-height
+ - explicit length
+ - percentage of containing block's height
+     - if containing block's height not specified explicitly && element not absolutely positioned then
+         - min-height=0, max-height=none
+ - max-height = none, no limit on box height
 
 
+[height](https://jsfiddle.net/SwannSG/o72vLav1/)
 
-
-
-
-
-
+[min-height](https://jsfiddle.net/SwannSG/fdj8294u/)
 
 
 
