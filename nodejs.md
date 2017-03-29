@@ -66,6 +66,15 @@ app/
    node_modules/
 ```
 
+#### Upgrade npm package manager
+
+For global install -g flag need to use "sudo".
+
+```javascript
+// upgrades npm to latest version
+sudo npm install npm@latest -g
+```
+
 #### Namespace using *require* and *module.export*
 
 The basic rules for the string in require(*string*) to access a module are:

@@ -29,7 +29,7 @@ Formatting contexts
 - relative
     - relative to where the block would have been under normal flow 
 
-The parent (container) establishes the *formatting context* for its children based on whether the child boxes are considered to be *inline-level* or *block-level*.
+The parent (containing bloack) establishes the *formatting context* for its children based on whether the child boxes are considered to be *inline-level* or *block-level*.
 
 In normal flow, elements inside a parent are either in *block formatting context* or *inline formatting context*, but not both at the same time.
 
@@ -111,10 +111,14 @@ or
 
 - Child boxes are stacked vertically, starting at the top of the containing block.
 - Child boxes always try to align as left as possible inside the parent container, even in the presence of floats.
-    - this does not mean they overlap a float. Rather they go as far left as possible, and if they hit a float, they stop there.
-- Vertical margins between sibling block-level boxes collapse i.e. only largest margin is used.    
+- Vertical abutting margins collapse i.e. only largest margin is used.
+- Child boxes expand to 100% of containing element     
 
-[Normal Flow Block-Level Formatting Context](https://jsfiddle.net/SwannSG/pp8wm52k/7/)
+[Block-Level and Float Ex 1](https://jsfiddle.net/SwannSG/324750w7/)
+
+[Block-Level and Float Ex 2](https://jsfiddle.net/SwannSG/jafq7904/)
+ - notice how a float expands horizontally to just enclose content
+     - do not necessarily expand to 100% of containing element  
 
 ### Normal flow inline-level formatting contex
 
@@ -146,6 +150,9 @@ Inline-level formatting is much more complex than block-level formatting.
 - Use *text-align* CSS property
 - Normally, whitespace (spaces, tabs etc.) can be affected by justification. Unless *white-space* property is set to **pre(serve)** or **pre(serve)-wrap**.
 
+[inline-block horizontal alignment of contents](https://jsfiddle.net/SwannSG/4jhvov1c/)
+
+
 **What controls the vertical alignment of inline-boxes ?**
 
 There are two properties that control this, *vertical-align* and *line-height*.
@@ -156,11 +163,8 @@ The *line box* height is determined by two factors:
 - the height of the inline boxes contained within it
 - the alignment of the inline boxes contained within it
 - the *height* property does not apply
-
-
-- line height --> line-height: value x height of line box content area
-
-The height of the line box content are is dependent on:
+- line height --> line-height = value X height of line box content area
+The height of the line box content are dependent on:
 - the font
 - vertical padding,border and margin start outside the content area
 
