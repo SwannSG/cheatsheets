@@ -305,3 +305,33 @@ error.errorEmitter.emit('error', err)
 *npm update*
 
  
+### How to support https 
+
+For test only purposes we can generate a self-signed certificate file, and a self-signed key file.
+
+[Generate self-signed certificates](https://www.youtube.com/watch?v=s76l4BhY3FY) 
+
+Because these are self-signed certificates they are not considered to be secure. In Chrome browser enable the *chrome://flags/#allow-insecure-localhost*.
+
+```javascript
+const https = require('https');
+
+var httpsOptions = {
+  cert: fs.readFileSync('/home/swannsg/development/ssl/apache-selfsigned.crt'), // certificate
+  key:  fs.readFileSync('/home/swannsg/development/ssl/apache-selfsigned.key') // key
+}; 
+
+https.createServer(httpsOptions, app).listen(serverPort, function () {
+...........
+}
+```
+
+
+
+
+
+
+
+
+
+
