@@ -1108,3 +1108,22 @@ function abc({coll='', query='', proj='', docs='', options=''} = {}) {
 
 abc({coll: 'People', options:true}) 
 ```
+
+### Show Method and Properties of an Object
+
+```javascript
+function showMethodsAndProperties(iterable_obj) {
+    for (each in iterable_obj) {
+        if (typeof(iterable_obj[each])=== 'function'){
+            console.log(each, ': function');    
+        }
+        else if (typeof(iterable_obj[each])=== 'object'){
+            console.log(each, ': object');
+        }
+        else {
+            console.log(each, ': primitive :', iterable_obj[each]);
+        }
+    }
+}
+```
+

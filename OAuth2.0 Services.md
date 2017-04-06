@@ -53,3 +53,15 @@ Called federated login
 1. Browser (sign-in) ----------------> Google (authentication)
 2. Browser (signed-in, id_token) <---- Google (authentication)
 3. Browser (id_token) ----------> Server (extract user profile from id_token)
+
+### Client Side
+
+Always enable xhrFields: {withCredentials: true}
+
+CORS (Cross-Origin Resource Sharing)
+
+browser passes origin header to server
+
+
+server responds (in header) saying what is allowed
+Access-control-allow-origin: 
