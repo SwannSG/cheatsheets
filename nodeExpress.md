@@ -207,9 +207,32 @@ HTTP request headers can be obtained as follows:
 req.headers     // {headerKey: value, ...}
 ```
 
+### Dealing with data sent to Express from the client browser
 
+We know how to deal with "data" inside the URL. But what about when we send data inside the mesage body. Let's consider:
+ - json data
+ - form data
+ - file upload   
 
+#### Sending JSON data from browser to Express 
 
+To send data from the browser to the server, we need to use the *XMLHttpRequest()* constructor.   
+
+```javascript
+const xhr = new XMLHttpRequest();   // new HttpRequest instance 
+xhr.open("POST", "/json-handler");
+xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+xhr.send(JSON.stringify({ email: "hello@user.com", response: { name: "Tester" } }));
+```
+
+By default *req.body* is undefined i.e. the body is not parsed. To parse the body we use body-parser. 
+
+```javascript
+const bodyParser = require('body-parser');
+app.post('/json-handler', bodyParser.json(), (req,res) => {
+    req.body; // { email: "hello@user.com", response: { name: "Tester" } }
+})
+```
 
 ExpressJS provides a simple API for doing just that. We won't cover the details of the
 API. Instead, we will provide links to the detailed documentation on ExpressJS guides.
