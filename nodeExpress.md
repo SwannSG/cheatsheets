@@ -214,6 +214,103 @@ We know how to deal with "data" inside the URL. But what about when we send data
  - form data
  - file upload   
 
+Browser's only have two mechanisms for sending data.
+ - XMLHttpRequest (XHR)
+ - fetch
+
+### XMLHttpRequest
+
+XMLHttpRequest is precedes *fetch* by many years, and reflects a programming style that has changed. It has the ability to abort a transfer from the browser to the client, something *fetch* does not have.  
+
+[XMLHttpRequest](https://en.wikipedia.org/wiki/XMLHttpRequest)
+
+XMLHttpRequest is a constructor.
+```javascript
+const xhr = XMLHttpRequest
+```
+
+ - xhr.open( Method , URL, Asynchronous, UserName, Password )
+    - Method is an http 1.1 method (GET, PUT, ....)
+    - URL is a string. It represents the path to a resource on the server
+    - Asynchronous is a boolean. True if asynchronous (default) 
+```javascript
+xhr.open('POST', '/json-handler')
+```
+
+ - xhr.setRequestHeader(header, value)
+    - The first parameter of this method is the text string name of the header.
+    - The second parameter is the text string value.
+    - This method must be invoked for each header that needs to be sent with the request.
+    -  Any headers attached here will be removed the next time the open method is invoked in a W3C conforming user agent.
+    - If we are sending JSON in the body we need to set "Content-Type" to "application/json;charset=UTF-8"  
+```javascript
+xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+```
+
+ - xhr.send(data)
+    - sends data to the server
+    - data can be any serializable data stream
+        - JSON.stringify(object)  
+```javascript
+xhr.send(JSON.stringify({ email: "hello@user.com", response: { name: "Tester" } }));
+```
+
+ - xhr.onreadystatechange = function() {}
+    - binds a function to *xhr* that will run asynchronously each time an event occurs.
+    - internally sets a property called *readyState* that is updated each time an event occurs
+        - readyState = 1, xhr.open has been run
+        - readyState = 2, headers received from server but body content not yet loaded
+        - readyState = 3, body content loading
+        - readyState = 4, body content has finished loading
+```javascript
+xhr.onreadystatechange = function() {
+    let readyStateDescription = {1:'open', 2: 'headers received', 3:'loading', 4:'loaded'}
+    let readyStateText = readyStateDescription[this.readyState]
+    if (readyStateText === 'loaded') {
+        console.log('success');
+    }
+}
+```         
+
+ - xhr.abort()
+    - prevents xhr.onreadystatechange event handler firing
+
+### fetch
+
+*fetch* is a modern mechanism to send (and receive) data from a browser.
+
+[fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
+
+fetch(URL, {Bunch of options})
+
+The bunch of options are:
+ - method: value is an http 1.1 method
+ - headers: Header object
+    - new Header({headerProperty: value, ... })
+ - body: data can be any serializable data stream
+
+```javascript
+result = fetch('/json-handler', {
+            method: 'post',
+            headers: new Headers({
+                'Content-Type': 'application/json;charset=UTF-8'
+            }),
+            body: JSON.stringify({ email: "hello@user.com", response: { name: "Tester" } })
+        });
+result
+    .then(x => {})
+    .catch(err => {})
+```
+
+fetch returns a promise.
+ - promise is resolved with promise value
+ - promise is rejected with promise value
+
+
+
+
+
+
 #### Sending JSON data from browser to Express 
 
 To send data from the browser to the server, we need to use the *XMLHttpRequest()* constructor.   
@@ -222,17 +319,48 @@ To send data from the browser to the server, we need to use the *XMLHttpRequest(
 const xhr = new XMLHttpRequest();   // new HttpRequest instance 
 xhr.open("POST", "/json-handler");
 xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+xhr.onreadystatechange = function() {
+    if (this.readyState == 4) {
+        if (this.status == 200) {
+            // success
+            console.log('success');
+        }
+        else {
+            // failure
+            console.log('error');
+        }
+    }
+};
 xhr.send(JSON.stringify({ email: "hello@user.com", response: { name: "Tester" } }));
 ```
 
 By default *req.body* is undefined i.e. the body is not parsed. To parse the body we use body-parser. 
 
+[Body-parser](https://github.com/expressjs/body-parser#bodyparserjsonoptions)
+
+
 ```javascript
 const bodyParser = require('body-parser');
 app.post('/json-handler', bodyParser.json(), (req,res) => {
     req.body; // { email: "hello@user.com", response: { name: "Tester" } }
+    res.sendStatus(200);
 })
 ```
+
+Sending json using the *fetch* API
+```javascript
+fetch('/json-handler', {
+	method: 'post',
+    headers: new Headers({
+		'Content-Type': 'application/json;charset=UTF-8'
+	}),
+	body: JSON.stringify({ email: "hello@user.com", response: { name: "Tester" } })
+});
+```
+
+
+
+
 
 ExpressJS provides a simple API for doing just that. We won't cover the details of the
 API. Instead, we will provide links to the detailed documentation on ExpressJS guides.
