@@ -37,6 +37,11 @@ headers----> Accept: text/*
 body-------> Hi! I’m a message!
 ```
 
+In *express* the above corresponds to:
+ - res.statusCode (200)
+ - res.statusMessage ('OK')
+
+
 ### Minimalist Web Server
 
 A web server understands communications using the *http* or *https* protocol.
@@ -167,7 +172,7 @@ To maintain transparency through a network the URL is encoded.
 
 #### Access query key-value pairs
 
-"http://localhost:3000/route_1?abc=1&def=2" will access path "/route_1". The key-value pairs are not part of the route.
+"http://localhost:3000/route_1?abc=1&def=2" will access path "/route_1". The key-value pairs are not part of the route. In this case the route is */route_1*.
 
 How do we extract the key-value pairs inside a query ?
  - remember a query starts with a "?" *url?key1=val1&key2=val2
@@ -175,11 +180,11 @@ How do we extract the key-value pairs inside a query ?
 ```javascript
 app.get('/route_1', (req, res) => {
     req.query   // {key1:val1, key2:val2}
-    res.send('ROUTE: route_1', res.);
+    res.send('ROUTE: route_1', req.query);
 })
 ```
 
-#### Access /:key_name in URL
+#### Access params /:parame_name substitution in URL
 
 Suppose we have a URL with the form *http://localhost/route_1/name/john*. And another URL with the form *http://localhost/route_1/surname/smith*. Suppose we wish to isolate name or surname.
 
@@ -220,7 +225,7 @@ Browser's only have two mechanisms for sending data.
 
 ### XMLHttpRequest
 
-XMLHttpRequest is precedes *fetch* by many years, and reflects a programming style that has changed. It has the ability to abort a transfer from the browser to the client, something *fetch* does not have.  
+XMLHttpRequest precedes *fetch* by many years, and reflects a programming style that has changed. It has the ability to abort a transfer from the browser to the client, something *fetch* does not have.  
 
 [XMLHttpRequest](https://en.wikipedia.org/wiki/XMLHttpRequest)
 
@@ -271,9 +276,9 @@ xhr.onreadystatechange = function() {
     }
 }
 ```         
-
  - xhr.abort()
     - prevents xhr.onreadystatechange event handler firing
+    - 
 
 ### fetch
 
@@ -287,7 +292,7 @@ The bunch of options are:
  - method: value is an http 1.1 method
  - headers: Header object
     - new Header({headerProperty: value, ... })
- - body: data can be any serializable data stream
+ - body: data can be any serializable data stream, like JSON
 
 ```javascript
 result = fetch('/json-handler', {
@@ -305,10 +310,6 @@ result
 fetch returns a promise.
  - promise is resolved with promise value
  - promise is rejected with promise value
-
-
-
-
 
 
 #### Sending JSON data from browser to Express 
@@ -334,19 +335,6 @@ xhr.onreadystatechange = function() {
 xhr.send(JSON.stringify({ email: "hello@user.com", response: { name: "Tester" } }));
 ```
 
-By default *req.body* is undefined i.e. the body is not parsed. To parse the body we use body-parser. 
-
-[Body-parser](https://github.com/expressjs/body-parser#bodyparserjsonoptions)
-
-
-```javascript
-const bodyParser = require('body-parser');
-app.post('/json-handler', bodyParser.json(), (req,res) => {
-    req.body; // { email: "hello@user.com", response: { name: "Tester" } }
-    res.sendStatus(200);
-})
-```
-
 Sending json using the *fetch* API
 ```javascript
 fetch('/json-handler', {
@@ -357,6 +345,84 @@ fetch('/json-handler', {
 	body: JSON.stringify({ email: "hello@user.com", response: { name: "Tester" } })
 });
 ```
+
+### Express middleware - bodyparser
+
+To process an incoming request to the server, where the request contains relevant *body* content, **bodyparser** middleware must be used.
+
+By default *req.body* is undefined i.e. the body is not parsed. To parse the body we use body-parser. 
+
+[Body-parser](https://github.com/expressjs/body-parser#bodyparserjsonoptions)
+
+```javascript
+const bodyParser = require('body-parser');
+app.post('/json-handler', bodyParser.json(), (req,res) => {
+    req.body; // { email: "hello@user.com", response: { name: "Tester" } }
+    res.sendStatus(200);
+})
+```
+
+It is possible to limit the size of data that may be uploaded to the server. There are other options settings as well, *bodyParser.json(OPTIONS)*.
+
+```javascript
+const bodyParser = require('body-parser');
+// limit to input body content of 1 byte
+app.post('/json-handler', bodyParser.json({limit:1}), (req,res) => {
+    req.body; // { email: "hello@user.com", response: { name: "Tester" } }
+    res.sendStatus(200);
+})
+```
+
+When we violate the upload size *bodyParser.json({limit:1})* in the above, *bodyparser* will automatically generate an error and send it to the client. But in this scenario when *bodyparser* runs it issues a res.end() and the user function never gets to run. Additionaly we may wish to log the error centrally, so we need an alternative mechansim to get greater control.
+
+If we wish to catch the error an handle it ourselves in a more controlled manner, we need to have an error catcher function. The function signature is *errorCatcher(error, req, res, next)*. 
+
+
+
+
+
+```javascript
+function errorCatcher(error, req, res, next) {
+    console.log('errorCatcher');
+    if (error) {
+        // set response and send directly to client
+        res.statusCode = error.statusCode;
+        res.statusMessage = error.message;
+        res.send();
+        // add some global error handling
+        res.end();
+    }
+    next();
+}
+
+app.post('/json-handler', bodyParser.json({limit:1}), errorCatcher,  (req,res) => {
+    console.log('hello there');
+    console.log(req.body);
+    console.log(res.statusCode);
+    res.sendStatus(200);
+})
+```
+
+### [Express Error Handling](https://expressjs.com/en/guide/error-handling.html)
+
+
+
+
+
+
+
+### Automatically restarting node during development
+
+While we are developing we are making changes all the time. For a change to take effect we need to restart node each time.
+
+```javascript
+node index.js
+```
+
+[nodemon](https://github.com/remy/nodemon) automates the process.
+
+
+
 
 
 
