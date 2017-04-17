@@ -346,6 +346,138 @@ fetch('/json-handler', {
 });
 ```
 
+### Receiving JSON data from server in browser 
+
+This really has nothing to do with **node**.
+
+#### XMLHttpRequest
+
+```javascript
+criteria = {h_c: {
+    'hcp': [[13,13],'x','x','x','x'],
+    'suit': [[5,7],'x','x','x']
+    },
+ps_c: {
+    'hcp': [[26,26],'x','x','x','x'],
+    'suit': [[9,9],'x','x','x']
+    }}
+
+
+const xhr = new XMLHttpRequest();   // new HttpRequest instance 
+xhr.open("POST", "/get_new_hand");
+xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+xhr.onreadystatechange = function() {
+    if (this.readyState == 4) {
+        if (this.status == 200) {
+            // success
+            console.log('success');
+            let jsObject = JSON.parse(this.response); 
+        }
+        else {
+            // failure
+            console.log('error');
+        }
+    }
+};
+xhr.send(JSON.stringify(criteria));
+```
+*xhr* has a bunch of methods and properties as shown below. The body content is available in *xhr.response*. The content is a JSON string. To change the JSON string to a javasctipt object we use *JSON.parse(xhr.response)*. 
+
+```javascript
+UNSENT : primitive : 0
+OPENED : primitive : 1
+HEADERS_RECEIVED : primitive : 2
+LOADING : primitive : 3
+DONE : primitive : 4
+onreadystatechange : function
+readyState : primitive : 4
+timeout : primitive : 0
+withCredentials : primitive : false
+upload : object
+responseURL : primitive : http://localhost:8080/get_new_hand
+status : primitive : 200
+statusText : primitive : OK
+responseType : primitive : 
+response : primitive : {"meta": ....."iteration": 161}
+responseText : primitive : {"meta": ....."iteration": 161}
+responseXML : object
+open : function
+setRequestHeader : function
+send : function
+abort : function
+getResponseHeader : function
+getAllResponseHeaders : function
+overrideMimeType : function
+onloadstart : object
+onprogress : object
+onabort : object
+onerror : object
+onload : object
+ontimeout : object
+onloadend : object
+addEventListener : function
+removeEventListener : function
+dispatchEvent : function
+```
+
+
+
+
+
+
+
+
+#### fetch API
+
+When we use the *fetch* API a promise is returned whose value is the response object. The response object has a number of methods and properties available.
+
+```javascript
+type : primitive : basic
+url : primitive : http://localhost:8080/get_new_hand
+redirected : primitive : false
+status : primitive : 200
+ok : primitive : true
+statusText : primitive : OK
+headers : object
+body : object
+bodyUsed : primitive : false
+clone : function
+arrayBuffer : function
+blob : function
+json : function
+text : function
+```
+
+In below note the sequence of *thens* carefully.
+
+The first ".then", *.then(res => {return res.json();})* receive the response object as a parameter when the promise resolves.
+ 
+The response object has a json method available which we can call. The json() method takes the body content which is a JSON string and converts it to a javascript object. Except it doesn't. Because this JSON conversion can be a long running operation, response.json() returns a promise.
+
+When the json operation completes and the promise is resolved, the promise value is a javascript object that was generated from from the JSON in the body.  
+
+```javascript
+criteria = {h_c: {
+    'hcp': [[13,13],'x','x','x','x'],
+    'suit': [[5,7],'x','x','x']
+    },
+ps_c: {
+    'hcp': [[26,26],'x','x','x','x'],
+    'suit': [[9,9],'x','x','x']
+    }}
+
+fetch('/get_new_hand', {
+	method: 'post',
+    headers: new Headers({
+		'Content-Type': 'application/json;charset=UTF-8'
+	}),
+	body: JSON.stringify(criteria)
+})
+.then(response => {return response.json();})
+.then(jsObject => {do something with jsObject})
+.catch(err => console.log(err))
+```
+
 ### Express middleware - bodyparser
 
 To process an incoming request to the server, where the request contains relevant *body* content, **bodyparser** middleware must be used.
@@ -427,26 +559,4 @@ node index.js
 
 
 
-
-ExpressJS provides a simple API for doing just that. We won't cover the details of the
-API. Instead, we will provide links to the detailed documentation on ExpressJS guides.
-The methods in the API are self-explanatory in most cases. A sampling of the requestrelated
-API is below:
-req.body: get the request body.
-req.query: get the query fragment of the URL.
-req.originalUrl
-req.host: reads the Host header field.
-req.accepts: reads the acceptable MIME-types on the client side.
-req.get OR req.header: read any header field passed as argument.
-On the way out to the client, ExpressJS provides the following response API:
-res.status: set an explicit status code.
-res.set: set a specific response header.
-res.send: send HTML, JSON or an octet-stream.
-res.sendFile: transfer a file to the client.
-07/04/2017 HTTP: The Protocol Every Web Developer Must Know - Part 1
-https://code.tutsplus.com/tutorials/http-the-protocol-every-web-developer-must-know-part-1--net-31177 15/27
-res.sendFile: transfer a file to the client.
-res.render: render an express view template.
-res.redirect: redirect to a different route. Express automatically adds the default
-redirection code of 302
 
