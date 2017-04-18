@@ -420,13 +420,6 @@ removeEventListener : function
 dispatchEvent : function
 ```
 
-
-
-
-
-
-
-
 #### fetch API
 
 When we use the *fetch* API a promise is returned whose value is the response object. The response object has a number of methods and properties available.
@@ -494,6 +487,10 @@ app.post('/json-handler', bodyParser.json(), (req,res) => {
 })
 ```
 
+
+### [Express Error Handling](https://expressjs.com/en/guide/error-handling.html)
+
+
 It is possible to limit the size of data that may be uploaded to the server. There are other options settings as well, *bodyParser.json(OPTIONS)*.
 
 ```javascript
@@ -507,51 +504,55 @@ app.post('/json-handler', bodyParser.json({limit:1}), (req,res) => {
 
 When we violate the upload size *bodyParser.json({limit:1})* in the above, *bodyparser* will automatically generate an error and send it to the client. But in this scenario when *bodyparser* runs it issues a res.end() and the user function never gets to run. Additionaly we may wish to log the error centrally, so we need an alternative mechansim to get greater control.
 
-If we wish to catch the error an handle it ourselves in a more controlled manner, we need to have an error catcher function. The function signature is *errorCatcher(error, req, res, next)*. 
+If we wish to catch the error and handle it ourselves in a more controlled manner, we need to have an error catcher function. The function signature is *errorCatcher(error, req, res, next)*. 
 
+The error handling function, *errorCatcher*, should run as the last middleware function.
 
+```javascript
+function fn1(req, res, next) {
+    next()
+}
 
+function fn2(req, res, next) {
+    next();
+}
+
+app.post('/json-handler', bodyParser.json({limit:10000}), fn1, fn2,  errorCatcher,  (req,res) => {...}
+```
 
 
 ```javascript
+// global error handler
+const events = require('events');
+const errorEmitter = new events.EventEmitter();
+// listener
+errorEmitter.on('error', function(x) {  
+    console.log("errorEmitter.on('error'.. listener has run")
+    console.log(x);
+})
+// end global error handler
+
 function errorCatcher(error, req, res, next) {
     console.log('errorCatcher');
     if (error) {
         // set response and send directly to client
         res.statusCode = error.statusCode;
-        res.statusMessage = error.message;
+        res.statusMessage = error.message + ' own custom error message';
         res.send();
         // add some global error handling
+        errorEmitter.emit('error', error)
         res.end();
     }
     next();
 }
 
-app.post('/json-handler', bodyParser.json({limit:1}), errorCatcher,  (req,res) => {
-    console.log('hello there');
+app.post('/json-handler', bodyParser.json({limit:10000}), fn1, fn2,  errorCatcher,  (req,res) => {
+    console.log('/json-handler');
     console.log(req.body);
-    console.log(res.statusCode);
-    res.sendStatus(200);
+    res.statusCode = 200; // is actually automatically set to 200
+    res.send(JSON.stringify({ a: 1, b:2 }));
 })
 ```
-
-### [Express Error Handling](https://expressjs.com/en/guide/error-handling.html)
-
-
-
-
-
-
-
-### Automatically restarting node during development
-
-While we are developing we are making changes all the time. For a change to take effect we need to restart node each time.
-
-```javascript
-node index.js
-```
-
-[nodemon](https://github.com/remy/nodemon) automates the process.
 
 
 

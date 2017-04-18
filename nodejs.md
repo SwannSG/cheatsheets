@@ -326,6 +326,15 @@ https.createServer(httpsOptions, app).listen(serverPort, function () {
 }
 ```
 
+### Automatically restarting node during development
+
+While we are developing we are making changes all the time. For a change to take effect we need to restart node each time.
+
+```javascript
+node index.js
+```
+
+[nodemon](https://github.com/remy/nodemon) automates the process.
 
 
 
