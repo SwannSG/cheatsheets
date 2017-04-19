@@ -425,6 +425,9 @@ dispatchEvent : function
 When we use the *fetch* API a promise is returned whose value is the response object. The response object has a number of methods and properties available.
 
 ```javascript
+// fetch(....)
+//  .then(response => {return response.json();})
+//response object methods and properties
 type : primitive : basic
 url : primitive : http://localhost:8080/get_new_hand
 redirected : primitive : false
@@ -443,7 +446,7 @@ text : function
 
 In below note the sequence of *thens* carefully.
 
-The first ".then", *.then(res => {return res.json();})* receive the response object as a parameter when the promise resolves.
+The first ".then", *.then(response => {return response.json();})* receive the response object as a parameter when the promise resolves.
  
 The response object has a json method available which we can call. The json() method takes the body content which is a JSON string and converts it to a javascript object. Except it doesn't. Because this JSON conversion can be a long running operation, response.json() returns a promise.
 
@@ -479,6 +482,8 @@ By default *req.body* is undefined i.e. the body is not parsed. To parse the bod
 
 [Body-parser](https://github.com/expressjs/body-parser#bodyparserjsonoptions)
 
+#### To parse incoming json data use bodyparser.json()
+
 ```javascript
 const bodyParser = require('body-parser');
 app.post('/json-handler', bodyParser.json(), (req,res) => {
@@ -486,6 +491,88 @@ app.post('/json-handler', bodyParser.json(), (req,res) => {
     res.sendStatus(200);
 })
 ```
+
+### Parsing form data sent to server
+
+The form tag has a number of attributes that describe what a server can expect when the form is submitted.
+ - action-----path to a resource, url
+ - method-----http 1.1 verb
+ - enctype----encoding type for the form
+     - default---------------"application/x-www-form-urlencoded"
+     - "multipart/form-data"---used for binary data transfer
+ - the form data is sent inside the body content
+ - browsers represent this content as a FormData object
+
+#### Form Data encoded as "application/x-www-form-urlencoded"
+
+```javascript
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title of the document</title>
+</head>
+<body>
+    <form action="/form" method="post" enctype="application/x-www-form-urlencoded">
+        First name:<br>
+        <input type="text" name="firstname" value="Mickey">
+        <br>
+        Last name:<br>
+        <input type="text" name="lastname" value="Mouse">
+        <br><br>
+        <input type="submit" value="Submit">
+    </form> 
+</body>
+</html>
+
+app.get('/form', (req,res) => {
+    console.log('GET /form');
+    res.sendFile('/home/swannsg/development/nodeLearn/expressPlay/form.html');
+});
+
+app.post('/form', bodyParser.urlencoded(), (req,res) => {
+    console.log('POST /form');
+    console.log(req.body) // { firstname: 'Mickey', lastname: 'Mouse' }
+});
+```
+
+For URL encoded form data, the body content follows the rules for URL syntax query 
+
+```javascript
+// Form Data
+firstname=Mickey&lastname=Mouse
+
+// parsed Form Data
+firstname:Mickey
+lastname:Mouse
+```
+
+#### Form Data encodes as multipart/form-data
+
+Now the data is sent to the server differently. *bodyparser* cannot deal with this encoding and we need an alternative middleware tool.
+
+```javascript
+// Headers
+Content-Type:multipart/form-data; boundary=----WebKitFormBoundaryYUTtrAWaB4w41IBt
+
+// Body Content
+Request Payload
+
+------WebKitFormBoundaryIcqUBQUCAW8ols3d
+Content-Disposition: form-data; name="firstname"
+
+Mickey
+------WebKitFormBoundaryIcqUBQUCAW8ols3d
+Content-Disposition: form-data; name="lastname"
+
+Mouse
+------WebKitFormBoundaryIcqUBQUCAW8ols3d--
+```
+
+
+
+
+
 
 
 ### [Express Error Handling](https://expressjs.com/en/guide/error-handling.html)
