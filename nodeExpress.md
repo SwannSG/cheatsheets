@@ -505,6 +505,8 @@ The form tag has a number of attributes that describe what a server can expect w
 
 #### Form Data encoded as "application/x-www-form-urlencoded"
 
+"application/x-www-form-urlencoded" is the default form encoding.
+
 ```javascript
 <!DOCTYPE html>
 <html>
@@ -547,7 +549,7 @@ firstname:Mickey
 lastname:Mouse
 ```
 
-#### Form Data encodes as multipart/form-data
+#### Form Data encoded as multipart/form-data
 
 Now the data is sent to the server differently. *bodyparser* cannot deal with this encoding and we need an alternative middleware tool.
 
@@ -569,6 +571,205 @@ Mouse
 ------WebKitFormBoundaryIcqUBQUCAW8ols3d--
 ```
 
+To handle this data stream from the browser, we need to use the *multer* middleware.
+
+```javascript
+const multer  = require('multer');
+let upload = multer(optional options object)
+```
+The *multer(options)* **options** object properties are:
+ - dest
+  or
+ - storage
+ - fileFilter
+ - limits
+ - preservePath
+
+We don't need to upload any file to use *multipart*. 
+
+```javascript
+// multipart/form-data with no files
+let mp_xfer_no_file = multer()
+app.post('/upload_file', mp_xfer_no_file.none(), (req,res) => {
+    console.log('POST /upload_file');
+    console.log(req.body) // forms field-value set
+    res.sendStatus(200);
+});
+```
+
+If we wish to upload a file we must use encoding *multipart/form-data*. This allows binary data to be transmitted across the network. Notice the argument to *mp_xfer_with_file.single('somename')* which musto correspond to the input name in the form html. multer automatically saves and uniquely names the file.
+
+```javascript
+// multipart/form-data with file, save to pwd
+let mp_xfer_with_file = multer({dest:'./'})
+// 'somename' reference to file_upload.html-->input-->name
+app.post('/upload_file', mp_xfer_with_file.single('somename'), (req,res) => {
+    console.log('POST /upload_file');
+    console.log(req.file);
+    console.log(req.body);
+    res.sendStatus(200);
+});
+``` 
+
+*req.file* references an object with propeties:
+ - fieldname: 'somename',
+ - originalname: 'Booking confirmation - Stephen Swann (AD5614092).pdf',
+ - encoding: '7bit',
+ - mimetype: 'application/pdf',
+ - destination: './',
+ - filename: '3f1226bf84c575ba6ff5705fea98691c',
+ - path: '3f1226bf84c575ba6ff5705fea98691c',
+ - size: 16378 }
+
+Suppose we wish to control the uploaded filename on the server side. We then need to used multer(options) where options has a **storage** property.
+
+```javascript
+//multipart/form-data with file, control filename on the server
+let storage = multer.diskStorage({
+    destination: './',
+    filename: function(req, file, cb) {
+        cb(null, file.originalname)}
+     })
+
+let mp_xfer_with_file = multer({storage: storage})
+app.post('/upload_file', mp_xfer_with_file.single('somename'), (req,res) => {
+    console.log('POST /upload_file');
+    console.log(req.file);
+    console.log(req.body);
+    res.sendStatus(200);
+});
+```
+
+## Joi
+
+[Joi API](https://github.com/hapijs/joi/blob/v10.4.1/API.md#validatevalue-schema-options-callback)
+
+[Joi](https://github.com/hapijs/joi)
+
+Validation of a js object is a requirement across the board, and *joi* seems to address this requirement without "forcing" an approach.
+
+JSON into and from the server can be validated.
+
+By the time the "application logic" receives or send  an object it is "clean".
+
+What is the implication of this wrt **mongoose** ? Is the wrapper still required ? Perhaps we can add a simple wrapper to interface to Mongo ?
+
+```javascript
+directLogin = {
+    username: 'steveswann',
+    password: 'abc012efg',
+    someNumber: '344'
+}
+// place some validation on object 
+directLoginV = Joi.object().keys({
+    username: Joi.string().min(8).max(40).required(),
+    password: Joi.string().min(8).max(40).required(),
+    someNumber: Joi.number()
+})
+
+Joi.validate(directLogin, directLoginV, function (err, value) {
+    if (err) {
+        console.log('Joi validation error');
+        console.log(err)
+    }
+    else {
+        console.log('Joi validation clean');
+        console.log(value);
+    }
+})
+
+// err objecct
+{ValidationError: message + stack trace
+isJoi: boolean
+name: 'ValidationError'
+details: {
+    message: 'some nice message',
+    path: field
+    type: ?
+    contect: [Object]
+}}
+// value is "cleaned" values
+{ username: 'steveswann',
+  password: 'abc012efg',
+  someNumber: 344 } // note numeric IS numeric
+
+{ ValidationError: "someNummber" is not allowed
+    at Object.exports.process (/home/swannsg/development/nodeLearn/expressPlay/node_modules/joi/lib/errors.js:181:19)
+    at _validateWithOptions (/home/swannsg/development/nodeLearn/expressPlay/node_modules/joi/lib/any.js:651:31)
+    at root.validate (/home/swannsg/development/nodeLearn/expressPlay/node_modules/joi/lib/index.js:121:23)
+    at Object.<anonymous> (/home/swannsg/development/nodeLearn/expressPlay/index.js:231:5)
+    at Module._compile (module.js:570:32)
+    at Object.Module._extensions..js (module.js:579:10)
+    at Module.load (module.js:487:32)
+    at tryModuleLoad (module.js:446:12)
+    at Function.Module._load (module.js:438:3)
+    at Module.runMain (module.js:604:10)
+  isJoi: true,
+  name: 'ValidationError',
+  details: 
+   [ { message: '"someNummber" is not allowed',
+       path: 'someNummber',
+       type: 'object.allowUnknown',
+       context: [Object] } ],
+  _object: 
+   { username: 'steveswann',
+     password: 'abc012efg',
+     someNummber: '344' },
+  annotate: [Function] }
+```
+
+Another example
+
+```javascript
+const schema = Joi.object().keys({
+    username: Joi.string().alphanum().min(3).max(30).required(),
+    password: Joi.string().regex(/^[a-zA-Z0-9]{3,30}$/),
+    access_token: [Joi.string(), Joi.number()],
+    birthyear: Joi.number().integer().min(1900).max(2013),
+    email: Joi.string().email()
+})
+
+
+Joi.validate({ username: 'abc', birthyear: 1994 },
+schema.with('username', 'birthyear').without('password', 'access_token'),
+function(err, value) {
+    if (err) {
+        console.log('schema error');
+    }
+    else {
+        console.log(value);
+    }
+})
+    
+// use joi promisifiy    
+joiPromise({ username: 'abc', birthyear: 1994 }, 
+schema.with('username', 'email').without('password', 'access_token'))
+    .then(val => console.log('promise success',val))
+    .catch(err => console.log('promise error',err));
+
+
+// promisify joi
+function joiPromise(data, schema) {
+    return new Promise(function fn1(resolve, reject){
+        Joi.validate(data, schema, function(err, value){
+            if (err) {
+                reject(err);
+            }
+            else {
+                resolve(value);
+            }
+        })
+    })
+}
+```
+
+
+
+
+
+
+
+
 
 
 
@@ -576,6 +777,8 @@ Mouse
 
 
 ### [Express Error Handling](https://expressjs.com/en/guide/error-handling.html)
+
+
 
 
 It is possible to limit the size of data that may be uploaded to the server. There are other options settings as well, *bodyParser.json(OPTIONS)*.

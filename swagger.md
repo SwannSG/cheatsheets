@@ -1,5 +1,7 @@
 ## Swagger
 
+While Swagger seems like a brilliant idea I have found it too difficult and finiky to use properly. Have therefore abandoned it.
+
 ### YAML Syntax
 
 
@@ -19,7 +21,7 @@ Once code is generated move to code directory and start the app *npm start*
 
 How do we add changes via YAML to an existing modified app ?
 
-
+How do we manage workflow.
 
 
 ### Snippets

@@ -806,7 +806,7 @@ Using SSH for push and fetch from the Remote is very helpful, because we don't n
 Steps to achieve this are:
 - configure SSH keys on local machine (if you don't have them already)
 - grab the public key using *cat ~/.ssh/id_rsa.pub*
-- paster the public key into the Remote service (github, bitbucket, gitlab)
+- paste the public key into the Remote service (github, bitbucket, gitlab)
 - test with a *fetch* or *push*
 
 

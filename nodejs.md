@@ -16,6 +16,17 @@
 - Handler may make further i/o request
 - Handler then gives control back to Event Loop
 
+### Getting started
+
+From inside the directory where we want to setup the application.
+
+*npm init*
+
+To update local dependencies in package.json use the --save option 
+*npm install express --save*
+*npm install mongodb --save*
+*npm install nodemon --save*
+
 ### Basic Node Configuration
 
 ```javascript
@@ -78,7 +89,7 @@ sudo npm install npm@latest -g
 #### Namespace using *require* and *module.export*
 
 The basic rules for the string in require(*string*) to access a module are:
-    - don't include filename extention ".js" in the string. test.js becomes "test"  
+    - don't include filename extension ".js" in the string. test.js becomes "test"  
     - any module in *node_modules* is referenced directly. /mongodb is referenced as "mongodb"
     - "./" and "../" starting point is where the source js file is located in the directory tree
     - "./" moves downwards
@@ -247,6 +258,8 @@ With the database running, we can open another bash window and get a direct inte
 
 #### Node and mongo
 
+[node-mongodb-native/2.2/api/](http://mongodb.github.io/node-mongodb-native/2.2/api/Collection.html)
+
 We have exampe code showing access to a mongo database.
 
 A typical database interaction has these steps:
@@ -300,9 +313,14 @@ module.exports = {
 error.errorEmitter.emit('error', err)
 ```
 
+[Sentry Cloud Error Store](https://sentry.io/welcome/)
+
+
 ## npm
 
 *npm update*
+
+[]Sentry node js](https://sentry.io/private-xs/admin/getting-started/node/)
 
  
 ### How to support https 
@@ -331,7 +349,7 @@ https.createServer(httpsOptions, app).listen(serverPort, function () {
 While we are developing we are making changes all the time. For a change to take effect we need to restart node each time.
 
 ```javascript
-node index.js
+nodemon index.js
 ```
 
 [nodemon](https://github.com/remy/nodemon) automates the process.
