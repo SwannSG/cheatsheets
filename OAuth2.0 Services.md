@@ -59,9 +59,9 @@ token = {
 
 The *accessToken* is sent to the client (unique per client per token issued).
 
-For the client to "access a resource" in the node app, they need an accessToken and a *scope* that allows access. 
+For the client to "access a resource" in the node app, they need an accessToken string and a *scope* that allows access. 
 
-Assuming the client has a *token*, any message (get, post, etc.) must have a header property called *Authorization: Bearer <accessToken>*.
+Assuming the client has a *token*, any message (get, post, etc.) must have a header property called *Authorization: Bearer accessToken string*.
 
 We authenticate the message, and either reject or accept the token. If we accept the token we allow "access to the resource".
 
@@ -79,7 +79,7 @@ let oauthModel = {
 const oauth = new OAuthServer({ model: oauthModel });
 
 app.get('/access_resource', oauth.authenticate({scope:['user']}), (req, res, next) => {
-    // this function is run is token and scope are valid
+    // this function is run if token and scope are valid
     console.log('/access_resource');
     console.log('res.locals.oauth.token', res.locals.oauth.token);
     res.send('/access_resource is accessible');
