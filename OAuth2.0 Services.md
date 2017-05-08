@@ -92,7 +92,12 @@ When the next function runs, we get access to the token via *res.locals.oauth.to
 
 ### Oauth2 model for password grant
 
+### Authorisation code flow for Google
 
+[Code Flow](https://developers.google.com/actions/develop/identity/oauth2-code-flow#handle_user_sign-in)
+[API Manager](https://console.developers.google.com/apis/credentials/oauthclient/212202313428-6mc89ovul11felrj2obproaoda1gpr5u.apps.googleusercontent.com?project=rock-prism-144813)
+[Google scopes](https://developers.google.com/identity/protocols/googlescopes)
+[Google Oauth Playground](https://developers.google.com/oauthplayground/?code=4/3O6DUCNBTcHd9WgkPdTgQIZm976G8Iqdhr7UTTPDwUQ#)
 
 
 
