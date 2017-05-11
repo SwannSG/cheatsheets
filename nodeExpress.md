@@ -41,6 +41,40 @@ In *express* the above corresponds to:
  - res.statusCode (200)
  - res.statusMessage ('OK')
 
+### URL
+
+```javascript
+<method> <request-URL> <version>
+<headers>
+<entity-body>
+```
+
+We are refering to the *request-URL* 
+ - ASCI characters only
+ - safe unreserved characters are a subset of ASCI characters [A-Z][a-z][0-9][  - _ . ~ ]
+    - no encoding required for safe characters
+ - reserved characters [ !	*	'	(	)	;	:	@	&	=	+	$	,	/	?	#	[	] ]
+    - no encoding when used for their reserved purpose, otherwise must be percent encoded
+    - reserved characters have semantic meaning
+ 
+How is encoding achieved ?
+ - see [HTTP - URL encoding](https://www.tutorialspoint.com/http/pdf/http_url_encoding.pdf)
+ - percent encoding of arbitrary data
+    - binary data
+    - character data
+        - unreserved characters are sent unchanged
+        - other characters are translated to UTF-8 bytes and then percent encoded
+
+GET *request-URL* can include data in the URL of this form "localhost://get_it?key1=value1&key2=value2".
+ - use req.query
+
+POST *request-URL*
+ - Content-Type: "application/x-www-form-urlencoded; charset=UTF-8"
+ - data must be included in the body (NOT in the URL like a GET)
+
+**require('querystring')**
+**encodeURI(STRING)** in the browser
+
 
 ### Minimalist Web Server
 
@@ -844,6 +878,55 @@ app.post('/json-handler', bodyParser.json({limit:10000}), fn1, fn2,  errorCatche
 })
 ```
 
+### Understanding Redirect 302
+
+ - Client sends request to ServerA
+ - ServerA sends response to Client, saying ServerA does not have resource, but you can find it on ServerB (res.redirect(302, URL)
+    - notice ServerA can send data to ServerB by including it in the URL
+ - Client automatically (user is not involved at all) forwards ServerA's response to ServerB
+    - ServerB can extract data from ServerA (req.query) 
+ - ServerB responds to Client
+    - Server B may first communicate directly with ServerA before sending response to the Client 
+
+```javascript
+Client sends request to ServerA
+
+General (Client to ServerA)     
+    Request URL:http://localhost:3001/reply_with_redirect?field=abcd
+    Request Method:GET
+    Status Code:302 Found
+    Remote Address:127.0.0.1:3001
+    Referrer Policy:no-referrer-when-downgrade
+
+Response Headers (from ServerA to Client)
+    Connection:keep-alive
+    Content-Length:156
+    Content-Type:text/html; charset=utf-8
+    Date:Wed, 10 May 2017 17:41:45 GMT
+    Location:http://localhost:3000/received_redirect_from_dumb_server
+    Vary:Accept
+    X-Powered-By:Express
+
+Request Headers (from Client to ServerA)
+    Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+    Accept-Encoding:gzip, deflate, sdch, br
+    Accept-Language:en-US,en;q=0.8
+    Cache-Control:no-cache
+    Connection:keep-alive
+    Cookie:io=G_GEJyYuSXcspSy-AAAA
+    Host:localhost:3001
+    Pragma:no-cache
+    Referer:http://localhost:3000/test_redirect
+    Upgrade-Insecure-Requests:1
+    User-Agent:Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.98 Safari/537.36
+    Query String Parameters
+
+Query String Parameters
+    field: abcd
+end Client sends request to ServerA
+```
+
+What is received by ServerB ?
 
 
 
