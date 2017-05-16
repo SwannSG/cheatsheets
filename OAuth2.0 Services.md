@@ -10,7 +10,7 @@
 
 This is a self-contained solution. No third party is involved.
 
-When a user registers with the node app, a *user* document is created in *users*.
+When a user registers with the node app, a *user* record is created in *users*.
  
 ```javascript
 // users
@@ -89,8 +89,6 @@ app.get('/access_resource', oauth.authenticate({scope:['user']}), (req, res, nex
 The middleware *oauth.authenticate({scope:['user']})* authenticates the accessToken. And checks token.scope=[..., 'user', ...] to include 'user'. If these conditions are met the next function is executed. Otherwise the request is rejected with an appropriate response.
 
 When the next function runs, we get access to the token via *res.locals.oauth.token*. From that we can identify the user. So this also provides session management. 
-
-### Oauth2 model for password grant
 
 ### Authorisation code flow for Google
 

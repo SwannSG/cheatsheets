@@ -354,6 +354,146 @@ nodemon index.js
 
 [nodemon](https://github.com/remy/nodemon) automates the process.
 
+### Dealing with the file system
+
+ - 'path'
+    - dirname (folder)
+    - basename (filename)
+    - extname (filename extension)
+    - format (properly formatted path for os)
+    - join  (combine path segments)
+    - normalize (resolves . and ..)
+    parse (component paths)  
+ - 'fs'
+
+Read a file
+ - asych (default)
+    - open
+    - read
+    - readFile (read entire file)
+ - synch
+    - readSync
+    - readFileSync
+Read a file chunk by chunk (usefull for very large files or only a portion of file is required)
+ - open (mode) returns file descriptor
+ - read (file descriptor, data length, starting position) populates buffer
+    - default starting position is current file pointer
+ - close 
+
+Read an entire file (mostly used, simpler)
+ - specify file encoding
+ - no explicit 'open'
+
+Writing to a file chunk by chunk
+ - open
+ - write
+
+Writing an entire file
+ - writeFile (write entire String or Buffer, encoding)
+ - appendFile
+
+### Streams
+ - Readable
+ - Writable
+ - String || Buffer || Object (mode)
+ - data event
+ - end event
+ - pipe
+ - instances of EventEmitter
+
+```javascript
+// http req is a readable stream
+if (req.method==='POST') {
+    const reqBodyBuffers = [];  // an array of buffers
+    // when we have data, place the chunk in a Buffer, apped Buffer to array
+    req.on('data', chunk => reqBodyBuffers.push(Buffer.from(chunk)));
+    
+    // data transfer is ended, concat Buffers and convert to UTF8 string
+    req.on('end', () => {
+        console.log(Buffer.concat(reqBodyBuffers).toString());
+        resolve();
+    })
+```
+
+Streams require the "stream" module. Instance of EventEmitter.
+
+Node has many standard streams:
+ - http req
+ - http res
+ - process.stdin
+ - process.stdout
+ - process.stderr
+ - fs streams
+ - zlib streams
+ - crypto streams
+ - TCP sockets
+
+There are developers of streams and consumers of streams. We will focus on consuming streams.
+
+There are four fundamental stream types within Node.js:
+ - Readable - streams from which data can be read (for example fs.createReadStream()).
+ - Writable - streams to which data can be written (for example fs.createWriteStream()).
+ - Duplex - streams that are both Readable and Writable (for example net.Socket).
+ - Transform - Duplex streams that can modify or transform the data as it is written and read (for example zlib.createDeflate()).
+
+Readable stream
+ - grab a streamInstance of the stream 
+ - *streamInstance.on('data', (chunk) = {})* gets a chunk of data
+ - *streamInstance.on('end', () = {})* shows end of data 
+
+Writable stream pattern
+ - grab a writable streamInstance
+ - *streamInstance.write('someData')*
+ - *streamInstance.end('done writing data')*
+ 
+
+
+
+
+
+
+### Buffers
+
+[Node Buffers](https://nodejs.org/api/buffer.html)
+
+Some underlying concepts.
+
+ES6 allows TypedArrays.
+ - actual Buffer
+ - view of the buffer
+
+```javascript
+buffer = new ArrayBuffer(5);
+view = new Int8Array(buffer);
+```
+
+Octet stream character representation
+ - decimal (0-255)
+ - hex (0xNN)
+
+Node *Buffers* are global.
+
+Creating *Buffers*
+ - UTF-8 is default
+
+```javascript
+// Creates a zero-filled Buffer of length 10.
+const buf1 = Buffer.alloc(10);
+// Creates a Buffer of length 10, filled with 0x1.
+const buf2 = Buffer.alloc(10, 1);
+// unsafe but fast
+const buf3 = Buffer.allocUnsafe(10);
+// Creates a Buffer containing array
+const buf4 = Buffer.from([1, 2, 3]);
+// Creates a Buffer from string
+const buf5 = Buffer.from('tést');
+// Creates a Buffer from string using Latin-1 encoding
+const buf6 = Buffer.from('tést', 'latin1');
+```
+
+The are a lot of methods associated with a buffer instance.
+Buffers have an index key similar to an array. 
+
 
 
 
