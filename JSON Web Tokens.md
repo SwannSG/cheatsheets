@@ -53,15 +53,15 @@ eyJ1c2VySWQiOiJiMDhmODZhZi0zNWRhLTQ4ZjItOGZhYi1jZWYzOTA0NjYwYmQifQ  // encoded c
 eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiJiMDhmODZhZi0zNWRhLTQ4ZjItOGZhYi1jZWYzOTA0NjYwYmQifQ.-xN_h82PHVTCMA9vdoHrcZxH-x5mb11y1537t3rGzcM
 ```
 
-###Properties of JWT
+### Properties of JWT
 
 JWT does not hide or obscure data in any way.
 
 Verification of the attached signature shows the token was created by a bona fide source.
 
-###Verifiying the JWT
+### Verifiying the JWT
 
-The receiving server computes the signature based on header and payload. If the signature sent and signature computed match the token is considered to be valid. 
+The receiving server computes the signature based on header and payload. If the signature sent and signature computed match, the token is considered to be valid. 
 
 ### node JWT Implementation
 

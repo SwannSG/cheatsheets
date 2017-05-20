@@ -6,6 +6,8 @@
 
 [Oauth2 documents](https://oauth2-server.readthedocs.io/en/latest/index.html)
 
+[Oauth2 Full Document PDF](https://media.readthedocs.org/pdf/oauth2-server/latest/oauth2-server.pdf)
+
 ### Password grant authorisation
 
 This is a self-contained solution. No third party is involved.
@@ -17,7 +19,7 @@ When a user registers with the node app, a *user* record is created in *users*.
 user = {
     username: // String, unique
     password: // String, hash is stored
-    scope: // Array of strings, added by node app not user
+    scope: // Array of strings, added by node app not the user
 }
 ```
 
@@ -90,6 +92,63 @@ The middleware *oauth.authenticate({scope:['user']})* authenticates the accessTo
 
 When the next function runs, we get access to the token via *res.locals.oauth.token*. From that we can identify the user. So this also provides session management. 
 
+### oAuth2 API Calls After Client Requests A Token - Password Grant Flow 
+
+getClient(clientId, clientSecret)
+ - clientSecret is ignored
+getUser(username, password)
+validateScope(user, client, scope)
+ - scope not used
+generateAccessToken(client, user, scope)
+ - 
+saveToken(token, client, user)
+
+
+getClient bridgeApp
+getUser admin admin
+validateScope
+{ _id: 590c1e0e5d171f27b4d1fba1,
+  username: 'admin',
+  scope: [ 'admin', 'user' ] }
+{ _id: 590a157029c22d2f4c7e504f,
+  clientId: 'bridgeApp',
+  clientSecret: 'noSecret',
+  accessTokenLifetime: 1800,
+  redirectUris: [],
+  grants: [ 'password' ],
+  scope: [ 'user' ] }
+generateAccessToken()
+saveToken
+token { accessToken: 'token_string',
+  accessTokenExpiresAt: 2017-05-17T07:50:30.235Z,
+  refreshToken: 'a2a9038da33cd520290c2c2afc38a63307e0601c',
+  refreshTokenExpiresAt: 2017-05-31T07:20:30.235Z,
+  scope: true }
+client { _id: 590a157029c22d2f4c7e504f,
+  clientId: 'bridgeApp',
+  clientSecret: 'noSecret',
+  accessTokenLifetime: 1800,
+  redirectUris: [],
+  grants: [ 'password' ],
+  scope: [ 'user' ] }
+user { _id: 590c1e0e5d171f27b4d1fba1,
+  username: 'admin',
+  scope: [ 'user' ] }
+end saveToken
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ### Authorisation code flow for Google
 
 [Code Flow](https://developers.google.com/actions/develop/identity/oauth2-code-flow#handle_user_sign-in)
@@ -98,8 +157,25 @@ When the next function runs, we get access to the token via *res.locals.oauth.to
 [Google Oauth Playground](https://developers.google.com/oauthplayground/?code=4/3O6DUCNBTcHd9WgkPdTgQIZm976G8Iqdhr7UTTPDwUQ#)
 
 
+### JSON Web Token (JWT)
+
+The modern method for tokens is JWT.
+
+We need to generate our own JWT compliant tokens.
+
+The advantage of this approach is that we don't have to access a database to authenticate a token, when we wish to access a resource. 
+
+If the signature is verified, the payload can be used without further examination.
+
+### JWT for Password Grant
 
 
 
 
+### Authorisation Code Flow for Facebook
 
+[Facebook Flow](https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow)
+[Facebook Developers Portal](https://developers.facebook.com/)
+[Facebook App Settings](https://developers.facebook.com/apps/249686882175779/fb-login/settings/)
+
+sudo ngrep -d any -Wbyline -q host localhost and port 3000
